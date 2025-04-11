@@ -281,7 +281,7 @@ const PropertyList: React.FC = () => {
       </div>
 
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
-        <DialogContent className="sm:max-w-[800px] w-full max-h-[90vh]">
+        <DialogContent className="sm:max-w-[900px] w-full max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Réserver {selectedProperty?.name}</DialogTitle>
             <DialogDescription>
@@ -289,9 +289,9 @@ const PropertyList: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
             {/* Image Section */}
-            <div className="md:col-span-1">
+            <div className="lg:col-span-1 md:col-span-1 col-span-1">
               {selectedProperty?.imageUrls.map((url, index) => (
                 <div key={index} className="relative h-48 mb-2 rounded-md overflow-hidden">
                   <Image
@@ -306,7 +306,7 @@ const PropertyList: React.FC = () => {
             </div>
 
             {/* Form Section */}
-            <div className="md:col-span-1">
+            <div className="lg:col-span-2 md:col-span-1 col-span-1">
               <div className="grid gap-4">
                 {/* Dates Selection */}
                 <div className="grid grid-cols-4 items-center gap-4">
