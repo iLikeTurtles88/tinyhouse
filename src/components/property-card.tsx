@@ -12,6 +12,7 @@ import {Mail, Phone, Bed, Bath, Users} from 'lucide-react';
 import Image from "next/image";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Label} from "@/components/ui/label";
+import {Textarea} from "@/components/ui/textarea";
 
 interface Property {
   id: string;
@@ -44,7 +45,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property, onSelectProperty})
   };
 
   return (
-    <Card className="bg-secondary shadow-md overflow-hidden rounded-lg" onClick={() => onSelectProperty(property)}>
+    <Card className="bg-secondary shadow-md overflow-hidden rounded-lg cursor-pointer" onClick={() => onSelectProperty(property)}>
       <CardHeader className="p-4">
         <CardTitle className="text-xl font-semibold">{property.name}</CardTitle>
         <CardDescription className="text-gray-500">{property.location}</CardDescription>
@@ -83,9 +84,9 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property, onSelectProperty})
 
         {/* Amenities */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {property.amenities.map((amenity) => (
+          {property.amenities.map((amenity, index) => (
             <span
-              key={amenity}
+              key={`${amenity}-${index}`}
               className="px-3 py-1 rounded-full bg-accent text-accent-foreground text-sm"
             >
               {amenity}
