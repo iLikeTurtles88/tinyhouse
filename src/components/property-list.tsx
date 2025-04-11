@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {Calendar} from "@/components/ui/calendar";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
 import {cn} from "@/lib/utils";
 import {format} from "date-fns";
 import {CalendarIcon} from "lucide-react";
@@ -25,7 +24,6 @@ import {toast} from "@/hooks/use-toast";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import Image from "next/image";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {LocationDetails} from "@/services/location";
 
 interface Property {
   id: string;
@@ -211,54 +209,21 @@ const PropertyList: React.FC = () => {
 
   const DateRangePicker = ({onDateChange}: { onDateChange: (dates: { from?: Date, to?: Date }) => void }) => {
     const [date, setDate] = React.useState<{ from?: Date, to?: Date } | undefined>(undefined);
-    const [open, setOpen] = React.useState(false);
 
     React.useEffect(() => {
       onDateChange(date || {});
     }, [date, onDateChange]);
 
     return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant={"outline"}
-            className={cn(
-              "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
-            )}
-          >
-            <CalendarIcon className="mr-2 h-4 w-4"/>
-            {date?.from ? (
-              date.to ? (
-                `${format(date.from, "dd/MM/yyyy")} - ${format(date.to, "dd/MM/yyyy")}`
-              ) : (
-                format(date.from, "dd/MM/yyyy")
-              )
-            ) : (
-              <span>Choisir les dates</span>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="center" side="bottom">
-          <Calendar
-            mode="range"
-            defaultMonth={date?.from}
-            selected={date}
-            onSelect={(newDate) => {
-              setDate(newDate);
-              if (newDate?.to) {
-                setOpen(false); // Close the popover when both dates are selected
-              }
-            }}
-            onMonthChange={(month) => {
-              // Keep the popover open when the month changes
-              setOpen(true);
-            }}
-            numberOfMonths={2}
-            disableCloseOnSelect={false}
-          />
-        </PopoverContent>
-      </Popover>
+      <Calendar
+        mode="range"
+        defaultMonth={date?.from}
+        selected={date}
+        onSelect={(newDate) => {
+          setDate(newDate);
+        }}
+        numberOfMonths={2}
+      />
     )
   }
 
