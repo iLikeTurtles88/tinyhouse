@@ -56,6 +56,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
   const [date, setDate] = useState<DateRange | undefined>(undefined);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
   const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
 
   const handleBooking = () => {
@@ -71,7 +73,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
   };
 
   const confirmBooking = () => {
-    if (name.trim() !== '' && email.trim() !== '') {
+    if (name.trim() !== '' && email.trim() !== '' && address.trim() !== '' && phone.trim() !== '') {
       // Basic email validation
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         toast({
@@ -82,7 +84,23 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
         return;
       }
 
-      localStorage.setItem(`booking_${property.id}`, JSON.stringify({date, name, email}));
+      // Basic phone number validation
+      if (!/^\d{10}$/.test(phone)) {
+        toast({
+          variant: 'destructive',
+          title: 'Erreur',
+          description: 'Veuillez entrer un numéro de téléphone valide (10 chiffres).',
+        });
+        return;
+      }
+
+      localStorage.setItem(`booking_${property.id}`, JSON.stringify({
+        date,
+        name,
+        email,
+        address,
+        phone
+      }));
       setIsBookingConfirmed(true);
 
       toast({
@@ -94,13 +112,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
         setIsBookingConfirmed(false);
         setName('');
         setEmail('');
+        setAddress('');
+        setPhone('');
         setDate(undefined);
       }, 3000);
     } else {
       toast({
         variant: 'destructive',
         title: 'Erreur',
-        description: 'Veuillez entrer votre nom et votre adresse e-mail.',
+        description: 'Veuillez remplir tous les champs du formulaire.',
       });
     }
   };
@@ -183,15 +203,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
         <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Informations de réservation</DialogTitle>
+              <DialogTitle>Informations de réservation - ${property.price} / nuit</DialogTitle>
               <DialogDescription>
                 {date?.from && date?.to ? (
                   <>
                     Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}.<br/>
-                    Entrez votre nom et votre adresse e-mail pour confirmer la réservation.
+                    Entrez vos informations pour confirmer la réservation.
                   </>
                 ) : (
-                  'Entrez votre nom et votre adresse e-mail pour confirmer la réservation.'
+                  'Entrez vos informations pour confirmer la réservation.'
                 )}
               </DialogDescription>
             </DialogHeader>
@@ -220,6 +240,28 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
                     placeholder="Votre Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="address">Votre Adresse</Label>
+                  <Input
+                    type="text"
+                    id="address"
+                    placeholder="Votre Adresse"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">Votre Numéro de Téléphone</Label>
+                  <Input
+                    type="tel"
+                    id="phone"
+                    placeholder="Votre Numéro de Téléphone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     required
                   />
                 </div>
