@@ -7,7 +7,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter // Import CardFooter
 } from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Calendar} from "@/components/ui/calendar";
@@ -17,18 +16,18 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter as DialogFooterRadix,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {useToast} from "@/hooks/use-toast";
-import {ScrollArea} from "@/components/ui/scroll-area";
-import {Bed, Bath, Users, Mail, Phone} from 'lucide-react';
+import {Mail, Phone, Bed, Bath, Users} from 'lucide-react';
 import Image from "next/image";
 import {DateRange} from "react-day-picker";
 import {format, differenceInDays} from "date-fns";
 import {Textarea} from "@/components/ui/textarea";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {CardFooter} from "@/components/ui/card";
 
 interface Property {
   id: string;
@@ -36,7 +35,6 @@ interface Property {
   description: string;
   location: string;
   imageUrls: string[];
-  videoUrl: string;
   price: number;
   amenities: string[];
   capacity: number;
@@ -62,9 +60,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
-
 
   // Recalculate total price when date or price changes
   useEffect(() => {
@@ -111,7 +107,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
           title: 'Erreur',
           description: 'Veuillez entrer un numéro de téléphone valide (10 chiffres).',
         });
-        setBookingError('Veuillez entrer un numéro de téléphone valide (10 chiffres).');
+        setBookingError('Veuillez entrer un numéro de téléphone valide (10 chiffres).',
+        );
         return;
       }
 
@@ -161,7 +158,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
       </CardHeader>
       <CardContent className="p-4">
         {/* Image Gallery */}
-        <div className="relative h-64 mb-4 rounded-md overflow-hidden cursor-pointer" onClick={() => setIsImageModalOpen(true)}>
+        <div className="relative h-64 mb-4 rounded-md overflow-hidden">
           <Image
             src={property.imageUrls[0]}
             alt={`${property.name} - Vue générale`}
@@ -207,176 +204,160 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
         <div>
           <div className="flex items-center space-x-1">
             <Mail className="h-4 w-4 text-gray-500"/>
-            <span>{property.bookingEmail}</span>
+            <a href={`mailto:${property.bookingEmail}`} className="text-sm text-gray-600 hover:text-gray-800">
+              {property.bookingEmail}
+            </a>
           </div>
           <div className="flex items-center space-x-1">
             <Phone className="h-4 w-4 text-gray-500"/>
-            <span>{property.ownerContact}</span>
+            <span className="text-sm text-gray-600">{property.ownerContact}</span>
           </div>
         </div>
-
-
-        <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
-          <DialogContent className="sm:max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle>{property.name}</DialogTitle>
-              <DialogDescription>
-                {property.description}
-                <br/>
-                {property.location}
-                <br/>
-                Prix: {property.price}€ / nuit
-              </DialogDescription>
-            </DialogHeader>
-
-            {/* Calendar and Booking Section */}
-            <div className="mt-4">
-              <p className="text-sm font-medium">Sélectionnez les dates de réservation:</p>
-              <Calendar
-                mode="range"
-                selected={date}
-                onSelect={setDate}
-                className="rounded-md border"
-                defaultMonth={new Date()} // Sets the current month as the default
-                fromMonth={new Date()}
-              />
-              {date?.from && date?.to ? (
-                <p className="text-sm mt-2">
-                  Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}
-                </p>
-              ) : (
-                <p className="text-sm mt-2">Veuillez sélectionner une plage de dates.</p>
-              )}
-            </div>
-            <Button onClick={handleBooking} className="mt-4" disabled={!date?.from || !date?.to}>
-              Réserver
-            </Button>
-
-            {/* Booking Information Dialog */}
-            <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
-              <DialogContent className="sm:max-w-[550px]">
-                <DialogHeader>
-                  <DialogTitle>Informations de réservation</DialogTitle>
-                  <DialogDescription>
-                    {date?.from && date?.to ? (
-                      <>
-                        Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}.
-                        <br/>
-                        Prix total: {totalPrice}€
-                        <br/>
-                        Veuillez entrer vos informations pour confirmer la réservation.
-                      </>
-                    ) : (
-                      'Veuillez entrer vos informations pour confirmer la réservation.'
-                    )}
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Votre Nom</Label>
-                      <Input
-                        type="text"
-                        id="name"
-                        placeholder="Votre Nom"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="email">Votre Email</Label>
-                      <Input
-                        type="email"
-                        id="email"
-                        placeholder="Votre Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="address">Votre Adresse</Label>
-                      <Input
-                        type="text"
-                        id="address"
-                        placeholder="Votre Adresse"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="phone">Votre Numéro de Téléphone</Label>
-                      <Input
-                        type="tel"
-                        id="phone"
-                        placeholder="Votre Numéro de Téléphone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="adults">Nombre d'adultes</Label>
-                      <Select value={adults.toString()} onValueChange={(value) => setAdults(parseInt(value))}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="1"/>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({length: property.capacity}, (_, i) => i + 1).map((num) => (
-                            <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="children">Nombre d'enfants</Label>
-                      <Select value={children.toString()} onValueChange={(value) => setChildren(parseInt(value))}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="0"/>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({length: property.capacity - adults}, (_, i) => i).map((num) => (
-                            <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="additionalRequests">Demandes additionnelles</Label>
-                    <Textarea
-                      id="additionalRequests"
-                      placeholder="Besoin d'un lit bébé? Allergies?"
-                      value={additionalRequests}
-                      onChange={(e) => setAdditionalRequests(e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-                </div>
-                {bookingError && (
-                  <p className="mt-4 text-center text-red-500">{bookingError}</p>
-                )}
-
-                <DialogFooterRadix>
-                  <Button type="button" onClick={confirmBooking}>
-                    Confirmer la réservation - {totalPrice}€
-                  </Button>
-                </DialogFooterRadix>
-              </DialogContent>
-            </Dialog>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={handleBooking}>Réserver</Button>
       </CardFooter>
+
+      <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+        
+          
+            
+              Informations de réservation
+            
+            
+              
+                {date?.from && date?.to ? (
+                  <>
+                    Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}.
+                    <br/>
+                    Prix total: {totalPrice}€
+                    <br/>
+                    Veuillez entrer vos informations pour confirmer la réservation.
+                  </>
+                ) : (
+                  'Veuillez entrer vos informations pour confirmer la réservation.'
+                )}
+              
+            
+
+            {/* Image Carousel in Booking Modal */}
+            <div className="relative w-full h-64 rounded-md overflow-hidden mb-4">
+              {property.imageUrls.map((imageUrl, index) => (
+                <div key={index} className="absolute inset-0 transition-transform duration-500">
+                  <Image
+                    src={imageUrl}
+                    alt={`${property.name} - Image ${index + 1}`}
+                    fill
+                    style={{objectFit: 'cover'}}
+                    className="rounded-md"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                  Votre Nom
+                  <Input
+                    type="text"
+                    id="name"
+                    placeholder="Votre Nom"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                
+                
+                  Votre Email
+                  <Input
+                    type="email"
+                    id="email"
+                    placeholder="Votre Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                  Votre Adresse
+                  <Input
+                    type="text"
+                    id="address"
+                    placeholder="Votre Adresse"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    required
+                  />
+                
+                
+                  Votre Numéro de Téléphone
+                  <Input
+                    type="tel"
+                    id="phone"
+                    placeholder="Votre Numéro de Téléphone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    required
+                  />
+                
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                  Nombre d'adultes
+                  <Select value={adults.toString()} onValueChange={(value) => setAdults(parseInt(value))}>
+                    <SelectContent>
+                      <SelectItem value="1">1</SelectItem>
+                      {Array.from({length: property.capacity}, (_, i) => i + 1).map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                
+                
+                  Nombre d'enfants
+                  <Select value={children.toString()} onValueChange={(value) => setChildren(parseInt(value))}>
+                    <SelectContent>
+                      <SelectItem value="0">0</SelectItem>
+                      {Array.from({length: property.capacity - adults}, (_, i) => i).map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                
+              </div>
+
+              
+                Demandes additionnelles
+                <Textarea
+                  id="additionalRequests"
+                  placeholder="Besoin d'un lit bébé? Allergies?"
+                  value={additionalRequests}
+                  onChange={(e) => setAdditionalRequests(e.target.value)}
+                  rows={3}
+                />
+              
+            </div>
+            {bookingError && (
+              
+                {bookingError}
+              
+            )}
+
+            <DialogFooter>
+              <Button type="button" onClick={confirmBooking}>
+                Confirmer la réservation - {totalPrice}€
+              </Button>
+            </DialogFooter>
+          
+        
+      </Dialog>
     </Card>
   );
 };
