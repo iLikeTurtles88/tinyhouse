@@ -239,7 +239,7 @@ const PropertyList: React.FC = () => {
       </div>
 
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
-        <DialogContent className="sm:max-w-[900px] w-full max-h-[90vh]">
+        <DialogContent className="sm:max-w-[1100px] w-full max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Réserver {selectedProperty?.name}</DialogTitle>
             <DialogDescription>
