@@ -15,6 +15,7 @@ import {Mail, Phone} from "lucide-react";
 import {Textarea} from "@/components/ui/textarea";
 import {toast} from "@/hooks/use-toast";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import Image from "next/image";
 
 interface Property {
   id: string;
@@ -41,7 +42,6 @@ const dummyProperties: Property[] = [
       '/images/cabane_montagnarde_1.jpg',
       '/images/cabane_montagnarde_2.jpg',
       '/images/cabane_montagnarde_3.jpg',
-      '/images/tropical_bungalow_2.jpg',
     ],
     price: 175,
     amenities: ['WiFi', 'Cuisine', 'Cheminée', 'Jacuzzi'],
@@ -59,7 +59,6 @@ const dummyProperties: Property[] = [
     imageUrls: [
       '/images/maison_plage_1.jpg',
       '/images/maison_plage_2.jpg',
-      '/images/cabane_montagnarde_2.jpg',
     ],
     price: 250,
     amenities: ['WiFi', 'Accès à la plage', 'Balcon', 'Animaux acceptés'],
@@ -77,8 +76,6 @@ const dummyProperties: Property[] = [
     imageUrls: [
       '/images/cottage_lac_1.jpg',
       '/images/cottage_lac_2.jpg',
-      '/images/cabane_montagnarde_3.jpg',
-      '/images/cottage_lac_4.jpg',
     ],
     price: 200,
     amenities: ['WiFi', 'Cuisine', 'Quai', 'Kayaks'],
@@ -96,7 +93,6 @@ const dummyProperties: Property[] = [
     imageUrls: [
       '/images/desert_retreat_1.jpg',
       '/images/desert_retreat_2.jpg',
-      '/images/tropical_bungalow_1.jpg',
     ],
     price: 150,
     amenities: ['WiFi', 'Cuisine', 'Foyer', 'Sentiers de randonnée'],
@@ -150,8 +146,13 @@ const PropertyList: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [postalCode, setPostalCode] = useState('');
+  const [country, setCountry] = useState('');
   const [adults, setAdults] = useState<number>(1);
   const [children, setChildren] = useState<number>(0);
+  const [comments, setComments] = useState('');
 
   const handlePropertyClick = (property: Property) => {
     setSelectedProperty(property);
@@ -248,8 +249,13 @@ const PropertyList: React.FC = () => {
     setName('');
     setEmail('');
     setPhone('');
+    setAddress('');
+    setCity('');
+    setPostalCode('');
+    setCountry('');
     setAdults(1);
     setChildren(0);
+    setComments('');
   };
 
   return (
@@ -312,6 +318,54 @@ const PropertyList: React.FC = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="address" className="text-right">
+                Adresse:
+              </Label>
+              <Input
+                type="text"
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="city" className="text-right">
+                Ville:
+              </Label>
+              <Input
+                type="text"
+                id="city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="postalCode" className="text-right">
+                Code Postal:
+              </Label>
+              <Input
+                type="text"
+                id="postalCode"
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="country" className="text-right">
+                Pays:
+              </Label>
+              <Input
+                type="text"
+                id="country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="adults" className="text-right">
                 Adultes:
               </Label>
@@ -369,6 +423,18 @@ const PropertyList: React.FC = () => {
                 </div>
               </div>
             )}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="comments" className="text-right">
+                Commentaires:
+              </Label>
+              <Textarea
+                id="comments"
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                className="col-span-3"
+                placeholder="Ajouter des commentaires ou demandes spéciales"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={onClose}>

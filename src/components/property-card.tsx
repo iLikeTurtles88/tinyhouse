@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/card";
 import {Mail, Phone, Bed, Bath, Users} from 'lucide-react';
 import Image from "next/image";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Label} from "@/components/ui/label";
 
 interface Property {
   id: string;
@@ -28,9 +30,18 @@ interface Property {
 
 interface PropertyCardProps {
   property: Property;
+  onSelectProperty: (property: Property) => void;
 }
 
-const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
+const PropertyCard: React.FC<PropertyCardProps> = ({property, onSelectProperty}) => {
+
+  const [adults, setAdults] = React.useState<number>(1);
+  const [children, setChildren] = React.useState<number>(0);
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
+
+  const handleSelect = () => {
+    onSelectProperty(property);
+  };
 
   return (
     <Card className="bg-secondary shadow-md overflow-hidden rounded-lg">
@@ -80,18 +91,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
               {amenity}
             </span>
           ))}
-        </div>
-        <div>
-          <div className="flex items-center space-x-1">
-            <Mail className="h-4 w-4 text-gray-500"/>
-            <a href={`mailto:${property.bookingEmail}`} className="text-sm text-gray-600 hover:text-gray-800">
-              {property.bookingEmail}
-            </a>
-          </div>
-          <div className="flex items-center space-x-1">
-            <Phone className="h-4 w-4 text-gray-500"/>
-            <span className="text-sm text-gray-600">{property.ownerContact}</span>
-          </div>
         </div>
       </CardContent>
     </Card>
