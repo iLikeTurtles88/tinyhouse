@@ -15,8 +15,6 @@ import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Dia
 import {Textarea} from "@/components/ui/textarea";
 import {Label} from "@/components/ui/label";
 import {useToast} from "@/hooks/use-toast";
-import {summarizeReviews} from "@/ai/flows/review-summary";
-import {Skeleton} from "@/components/ui/skeleton";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Bed, Bath, Users} from 'lucide-react';
 import Image from "next/image";
@@ -49,32 +47,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [newReview, setNewReview] = useState('');
   const [updatedReviews, setUpdatedReviews] = useState(property.reviews);
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
-  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
 
-  useEffect(() => {
-    const getAiSummary = async () => {
-      setIsLoadingSummary(true);
-      try {
-        const output = await summarizeReviews({
-          reviews: updatedReviews,
-          propertyDescription: property.description,
-        });
-        setAiSummary(output?.summary ?? 'Aucun résumé disponible.');
-      } catch (e) {
-        toast({
-          variant: 'destructive',
-          title: 'Erreur lors de la génération du résumé',
-          description: 'Impossible de générer le résumé des avis pour le moment.',
-        });
-        console.error('Error summarizing reviews:', e);
-      } finally {
-        setIsLoadingSummary(false);
-      }
-    };
-    void getAiSummary();
-  }, [updatedReviews, property.description, toast]);
   const handleAddReview = () => {
     if (newReview.trim() !== '') {
       setUpdatedReviews([...updatedReviews, newReview]);
@@ -187,16 +161,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
               </Button>
             </DialogContent>
           </Dialog>
-        </section>
-
-        {/* AI Review Summary */}
-        <section>
-          <h3 className="text-lg font-semibold mb-2">Résumé des avis (IA)</h3>
-          {isLoadingSummary ? (
-            <Skeleton className="h-10 w-full"/>
-          ) : (
-            <p className="text-sm">{aiSummary ?? 'Aucun résumé disponible.'}</p>
-          )}
         </section>
       </CardContent>
       <CardFooter className="flex flex-col items-start p-4">
