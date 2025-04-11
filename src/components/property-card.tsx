@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   Card,
   CardContent,
@@ -9,8 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import {Button} from "@/components/ui/button";
+import {Calendar} from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -19,14 +19,15 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bed, Bath, Users } from 'lucide-react';
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {useToast} from "@/hooks/use-toast";
+import {ScrollArea} from "@/components/ui/scroll-area";
+import {Bed, Bath, Users} from 'lucide-react';
 import Image from "next/image";
-import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
+import {DateRange} from "react-day-picker";
+import {format} from "date-fns";
+import {Textarea} from "@/components/ui/textarea";
 
 interface Property {
   id: string;
@@ -49,13 +50,15 @@ interface PropertyCardProps {
   property: Property;
 }
 
-const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
-  const { toast } = useToast();
+const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
+  const {toast} = useToast();
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [newReview, setNewReview] = useState('');
   const [updatedReviews, setUpdatedReviews] = useState(property.reviews);
   const [date, setDate] = React.useState<DateRange | undefined>(undefined);
-  const [bookingConfirmation, setBookingConfirmation] = useState<string | null>(null);
+  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
 
   const handleAddReview = () => {
     if (newReview.trim() !== '') {
@@ -77,22 +80,32 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
 
   const handleBooking = () => {
     if (date?.from && date?.to) {
-      // Store the booking information in local storage
-      localStorage.setItem(`booking_${property.id}`, JSON.stringify(date));
-
-      // Display booking confirmation message
-      setBookingConfirmation(
-        `Réservation confirmée du ${format(date.from, "PPP")} au ${format(date.to, "PPP")}!`
-      );
-      toast({
-        title: 'Réservation Confirmée!',
-        description: `Votre réservation du ${format(date.from, "PPP")} au ${format(date.to, "PPP")} est confirmée.`,
-      });
+      setIsBookingDialogOpen(true);
     } else {
       toast({
         variant: 'destructive',
         title: 'Erreur',
         description: 'Veuillez sélectionner une plage de dates pour effectuer une réservation.',
+      });
+    }
+  };
+
+  const confirmBooking = () => {
+    if (name.trim() !== '' && email.trim() !== '') {
+      localStorage.setItem(`booking_${property.id}`, JSON.stringify({date, name, email}));
+
+      toast({
+        title: 'Réservation Confirmée!',
+        description: `Votre réservation du ${format(date.from!, "PPP")} au ${format(date.to!, "PPP")} est confirmée.`,
+      });
+      setIsBookingDialogOpen(false);
+      setName('');
+      setEmail('');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: 'Veuillez entrer votre nom et votre adresse e-mail.',
       });
     }
   };
@@ -110,7 +123,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
             src={property.imageUrls[0]}
             alt={`${property.name} - Vue générale`}
             fill
-            style={{ objectFit: 'cover' }}
+            style={{objectFit: 'cover'}}
             className="transition-transform duration-500 hover:scale-110"
           />
         </div>
@@ -120,15 +133,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
 
         <div className="flex items-center space-x-4 mb-3">
           <div className="flex items-center text-gray-600">
-            <Bed className="h-5 w-5 mr-1" />
+            <Bed className="h-5 w-5 mr-1"/>
             <span>{property.bedrooms} Chambres</span>
           </div>
           <div className="flex items-center text-gray-600">
-            <Bath className="h-5 w-5 mr-1" />
+            <Bath className="h-5 w-5 mr-1"/>
             <span>{property.bathrooms} Salles de bain</span>
           </div>
           <div className="flex items-center text-gray-600">
-            <Users className="h-5 w-5 mr-1" />
+            <Users className="h-5 w-5 mr-1"/>
             <span>{property.capacity} Invités</span>
           </div>
         </div>
@@ -197,7 +210,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
       <CardFooter className="flex flex-col items-start p-4">
         <div>
           Contact : {property.ownerContact}
-          <br />
+          <br/>
           Email : {property.bookingEmail}
         </div>
         <div className="mt-4">
@@ -219,9 +232,43 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
         <Button onClick={handleBooking} className="mt-4">
           Réserver
         </Button>
-        {bookingConfirmation && (
-          <p className="mt-4 text-green-500">{bookingConfirmation}</p>
-        )}
+        <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Informations de réservation</DialogTitle>
+              <DialogDescription>
+                Entrez votre nom et votre adresse e-mail pour confirmer la réservation.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Votre Nom</Label>
+                <Input
+                  type="text"
+                  id="name"
+                  placeholder="Votre Nom"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="email">Votre Email</Label>
+                <Input
+                  type="email"
+                  id="email"
+                  placeholder="Votre Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+            <Button type="submit" onClick={confirmBooking}>
+              Confirmer la réservation
+            </Button>
+          </DialogContent>
+        </Dialog>
       </CardFooter>
     </Card>
   );
