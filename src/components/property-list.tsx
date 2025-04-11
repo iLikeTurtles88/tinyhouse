@@ -24,6 +24,7 @@ import {Textarea} from "@/components/ui/textarea";
 import {toast} from "@/hooks/use-toast";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import Image from "next/image";
+import {ScrollArea} from "@/components/ui/scroll-area";
 
 interface Property {
   id: string;
@@ -289,6 +290,7 @@ const PropertyList: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
 
+          <ScrollArea className="h-[70vh]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
             {/* Image Section */}
             <div className="lg:col-span-1 md:col-span-1 col-span-1">
@@ -488,6 +490,7 @@ const PropertyList: React.FC = () => {
               </div>
             </div>
           </div>
+          </ScrollArea>
 
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={onClose}>
