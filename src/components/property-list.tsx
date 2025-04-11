@@ -126,18 +126,10 @@ const dummyProperties: Property[] = [
   },
 ];
 
-interface PropertyListProps {
-  locationFilter: string;
-}
-
-const PropertyList: React.FC<PropertyListProps> = ({locationFilter}) => {
-  const filteredProperties = locationFilter === 'all'
-    ? dummyProperties
-    : dummyProperties.filter(property => property.location === locationFilter);
-
+const PropertyList: React.FC = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {filteredProperties.map((property) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {dummyProperties.map((property) => (
         <PropertyCard key={property.id} property={property}/>
       ))}
     </div>

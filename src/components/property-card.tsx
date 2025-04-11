@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, {useEffect, useState} from 'react';
@@ -20,6 +19,7 @@ import {summarizeReviews} from "@/ai/flows/review-summary";
 import {Skeleton} from "@/components/ui/skeleton";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Bed, Bath, Users} from 'lucide-react';
+import Image from "next/image";
 
 interface Property {
   id: string;
@@ -94,19 +94,18 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
       </CardHeader>
       <CardContent className="p-4">
         {/* Image Gallery */}
-        <div className="flex overflow-x-auto space-x-3 mb-4">
-          {property.imageUrls.map((imageUrl, index) => (
-            <img
-              key={index}
-              src={imageUrl}
-              alt={`${property.name} - Image ${index + 1}`}
-              className="w-64 h-40 object-cover rounded-md flex-shrink-0"
-            />
-          ))}
+        <div className="relative h-64 mb-4 rounded-md overflow-hidden">
+          <Image
+            src={property.imageUrls[0]}
+            alt={`${property.name} - Vue générale`}
+            layout="fill"
+            objectFit="cover"
+            className="transition-transform duration-500 hover:scale-110"
+          />
         </div>
 
         {/* Property Details */}
-        <p className="mb-2">{property.description}</p>
+        <p className="mb-3 text-gray-700">{property.description}</p>
 
         <div className="flex items-center space-x-4 mb-3">
           <div className="flex items-center text-gray-600">
@@ -126,9 +125,14 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
         <p className="font-bold mb-3">Prix: ${property.price} / nuit</p>
 
         {/* Amenities */}
-        <div className="flex space-x-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-4">
           {property.amenities.map((amenity) => (
-            <span key={amenity} className="px-3 py-1 rounded-full bg-accent text-accent-foreground text-sm">{amenity}</span>
+            <span
+              key={amenity}
+              className="px-3 py-1 rounded-full bg-accent text-accent-foreground text-sm"
+            >
+              {amenity}
+            </span>
           ))}
         </div>
 

@@ -1,54 +1,49 @@
-
 "use client";
 
 import PropertyList from '@/components/property-list';
-import React, {useState} from "react";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Space_Grotesk} from "next/font/google";
-import {Filter} from "@/components/filter";
+import ContactForm from "@/components/contact-form";
+import Image from "next/image";
 
 const spaceGrotesk = Space_Grotesk({subsets: ['latin']});
 
 export default function Home() {
-  const [locationFilter, setLocationFilter] = useState<string>('all');
-
-  const handleLocationChange = (location: string) => {
-    setLocationFilter(location);
-  };
-
   return (
-    <div className={`p-6 ${spaceGrotesk.className}`}>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-center mb-2">Havres Minuscules de Retraite</h1>
-        <p className="text-md text-muted-foreground text-center">Découvrez nos tiny houses uniques dans des lieux exceptionnels.</p>
-      </div>
+    <div className={`flex flex-col min-h-screen ${spaceGrotesk.className}`}>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Filter Section */}
-        <aside className="md:col-span-1">
-          <div className="bg-secondary rounded-lg p-4">
-            <Select onValueChange={handleLocationChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Filtrer par Lieu"/>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les Lieux</SelectItem>
-                <SelectItem value="Asheville, NC">Asheville, NC</SelectItem>
-                <SelectItem value="Malibu, CA">Malibu, CA</SelectItem>
-                <SelectItem value="Lake Tahoe, CA">Lake Tahoe, CA</SelectItem>
-                <SelectItem value="Sedona, AZ">Sedona, AZ</SelectItem>
-                <SelectItem value="New York, NY">New York, NY</SelectItem>
-                <SelectItem value="Maui, HI">Maui, HI</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </aside>
+      {/* Hero Section */}
+      <section className="relative h-96 flex items-center justify-center text-center text-white bg-gray-800 overflow-hidden">
+        <Image
+          src="https://picsum.photos/id/944/1920/1080"
+          alt="Tiny House Retreat"
+          layout="fill"
+          objectFit="cover"
+          className="absolute z-0 opacity-60"
+        />
+        <div className="relative z-10">
+          <h1 className="text-5xl font-bold mb-4">Havres Minuscules de Retraite</h1>
+          <p className="text-xl">Découvrez la liberté et le confort de nos tiny houses uniques.</p>
+        </div>
+      </section>
 
-        {/* Property List Section */}
-        <section className="md:col-span-2">
-          <PropertyList locationFilter={locationFilter}/>
-        </section>
-      </div>
+      {/* Property List Section */}
+      <section className="p-6">
+        <PropertyList/>
+      </section>
+
+      {/* Contact Section */}
+      <section className="bg-secondary p-6 py-12">
+        <h2 className="text-3xl font-bold text-center mb-4">Contactez-nous</h2>
+        <p className="text-md text-muted-foreground text-center mb-6">
+          Intéressé par une de nos tiny houses ? Contactez-nous pour plus d'informations.
+        </p>
+        <ContactForm/>
+      </section>
+
+      {/* Footer */}
+      <footer className="text-center p-4 text-muted-foreground">
+        © {new Date().getFullYear()} Havres Minuscules de Retraite. Tous droits réservés.
+      </footer>
     </div>
   );
 }
