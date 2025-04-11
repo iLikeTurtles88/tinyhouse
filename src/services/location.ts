@@ -45,3 +45,4 @@ export async function getLocationDetails(location: Location): Promise<LocationDe
     country: 'USA',
   };
 }
+
