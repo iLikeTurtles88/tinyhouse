@@ -1,83 +1,86 @@
-
+/* src/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: "Space Grotesk", sans-serif;
-}
-
 @layer base {
   :root {
+    /* Tes variables de couleurs light ici */
     --background: 243 23% 94%;
     --foreground: 34 40% 14%;
-    --muted: 51 25% 77%;
-    --muted-foreground: 34 40% 14%;
+    --muted: 51 25% 77%; /* Peut-être un gris plus clair ? 240 5% 96% */
+    --muted-foreground: 34 40% 30%; /* Légèrement plus clair que foreground */
     --popover: 243 23% 94%;
     --popover-foreground: 34 40% 14%;
-    --card: 243 23% 94%;
+    --card: 243 23% 94%; /* Identique au background par défaut, ok */
     --card-foreground: 34 40% 14%;
-    --border: 51 25% 77%;
-    --input: 51 25% 77%;
+    --border: 51 25% 77%; /* Un peu foncé pour une bordure light, peut-être 240 6% 90% ? */
+    --input: 51 25% 77%; /* Même remarque que pour border */
     --primary: 113 34% 31%;
     --primary-foreground: 53 22% 96%;
-    --secondary: 53 22% 96%;
+    --secondary: 53 22% 96%; /* Très clair, proche du blanc */
     --secondary-foreground: 34 40% 14%;
-    --accent: 53 22% 96%;
+    --accent: 53 22% 96%; /* Identique à secondary */
     --accent-foreground: 34 40% 14%;
     --destructive: 0 63% 51%;
     --destructive-foreground: 53 22% 96%;
-    --ring: 113 34% 31%;
+    --ring: 113 34% 31%; /* Souvent basé sur primary ou accent */
     --radius: 0.5rem;
-    --sidebar-background: 53 22% 96%;
-    --sidebar-foreground: 34 40% 14%;
-    --sidebar-primary: 113 34% 31%;
-    --sidebar-primary-foreground: 53 22% 96%;
-    --sidebar-accent: 53 22% 96%;
-    --sidebar-accent-foreground: 34 40% 14%;
-    --sidebar-border: 51 25% 77%;
-    --sidebar-ring: 113 34% 31%;
+    /* Les variables sidebar sont ok si tu les utilises */
   }
 
   .dark {
+    /* Tes variables de couleurs dark ici */
     --background: 34 40% 14%;
     --foreground: 53 22% 96%;
-    --muted: 34 40% 14%;
-    --muted-foreground: 51 25% 77%;
-    --popover: 34 40% 14%;
+    --muted: 34 40% 20%; /* Un peu plus clair que le background dark */
+    --muted-foreground: 51 25% 77%; /* Ou 240 5% 65% ? */
+    --popover: 34 40% 10%; /* Un peu plus foncé que background */
     --popover-foreground: 53 22% 96%;
-    --card: 34 40% 14%;
+    --card: 34 40% 18%; /* Légèrement différent du background */
     --card-foreground: 53 22% 96%;
-    --border: 34 40% 14%;
-    --input: 34 40% 14%;
-    --primary: 113 34% 31%;
-    --primary-foreground: 53 22% 96%;
-    --secondary: 34 40% 14%;
+    --border: 34 40% 25%; /* Plus visible que le card/background */
+    --input: 34 40% 25%; /* Identique à border */
+    --primary: 113 34% 45%; /* Un peu plus clair en dark mode ? */
+    --primary-foreground: 53 22% 98%; /* Presque blanc */
+    --secondary: 34 40% 22%; /* Subtil */
     --secondary-foreground: 53 22% 96%;
-    --accent: 34 40% 14%;
+    --accent: 34 40% 22%; /* Identique à secondary */
     --accent-foreground: 53 22% 96%;
-    --destructive: 0 63% 51%;
+    --destructive: 0 70% 60%; /* Un peu plus vibrant en dark */
     --destructive-foreground: 53 22% 96%;
-    --ring: 113 34% 31%;
-    --radius: 0.5rem;
-    --sidebar-background: 34 40% 14%;
-    --sidebar-foreground: 53 22% 96%;
-    --sidebar-primary: 113 34% 31%;
-    --sidebar-primary-foreground: 53 22% 96%;
-    --sidebar-accent: 34 40% 14%;
-    --sidebar-accent-foreground: 53 22% 96%;
-    --sidebar-border: 34 40% 14%;
-    --sidebar-ring: 113 34% 31%;
+    --ring: 113 34% 45%; /* Basé sur primary (potentiellement ajusté) */
+    /* --radius reste le même */
+    /* Les variables sidebar sont ok si tu les utilises */
   }
 }
 
 @layer base {
-  * {
+  /* SUPPRIMER la règle pour '*' */
+  /* * {
     @apply border-border;
-  }
+  } */
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased; /* antialiased pour un meilleur rendu de police */
+    min-height: 100vh;
+    /* La police sera appliquée via la classe sur le body dans layout.tsx */
+    /* NE PAS METTRE font-family ici si on utilise next/font */
+  }
+
+  /* Styles optionnels pour la scrollbar (si tu les veux) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/50; /* Utilise une couleur de fond subtile */
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/60 rounded-lg border-2 border-transparent bg-clip-content; /* Style amélioré */
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/80;
   }
 }
-
