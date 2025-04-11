@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Card,
   CardContent,
@@ -17,17 +17,19 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
+  DialogFooter // Import DialogFooter
 } from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {useToast} from "@/hooks/use-toast";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {Bed, Bath, Users} from 'lucide-react';
+import {Bed, Bath, Users, Mail, Phone} from 'lucide-react';
 import Image from "next/image";
 import {DateRange} from "react-day-picker";
-import {format} from "date-fns";
+import {format, differenceInDays} from "date-fns";
 import {Textarea} from "@/components/ui/textarea"; // Import Textarea
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 interface Property {
   id: string;
@@ -58,7 +60,20 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
-  const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
+  const [additionalRequests, setAdditionalRequests] = useState('');
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  // Recalculate total price when date or price changes
+  useEffect(() => {
+    if (date?.from && date?.to) {
+      const numberOfNights = differenceInDays(date.to, date.from);
+      setTotalPrice(numberOfNights * property.price);
+    } else {
+      setTotalPrice(0);
+    }
+  }, [date, property.price]);
 
   const handleBooking = () => {
     if (date?.from && date?.to) {
@@ -99,21 +114,26 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
         name,
         email,
         address,
-        phone
+        phone,
+        additionalRequests,
+        adults,
+        children,
+        totalPrice
       }));
-      setIsBookingConfirmed(true);
 
       toast({
         title: 'Réservation Confirmée!',
-        description: `Votre réservation du ${format(date.from!, "PPP")} au ${format(date.to!, "PPP")} est confirmée.`,
+        description: `Votre réservation du ${format(date.from!, "PPP")} au ${format(date.to!, "PPP")} pour un total de ${totalPrice}€ est confirmée.`,
       });
       setTimeout(() => {
         setIsBookingDialogOpen(false);
-        setIsBookingConfirmed(false);
         setName('');
         setEmail('');
         setAddress('');
         setPhone('');
+        setAdditionalRequests('');
+        setAdults(1);
+        setChildren(0);
         setDate(undefined);
       }, 3000);
     } else {
@@ -161,7 +181,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
           </div>
         </div>
 
-        <p className="font-bold mb-3">Prix: ${property.price} / nuit</p>
+        <p className="font-bold mb-3">Prix: {property.price}€ / nuit</p>
 
         {/* Amenities */}
         <div className="flex flex-wrap gap-2 mb-4">
@@ -177,9 +197,14 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
       </CardContent>
       <CardFooter className="flex flex-col items-start p-4">
         <div>
-          Contact : {property.ownerContact}
-          <br/>
-          Email : {property.bookingEmail}
+          <div className="flex items-center space-x-1">
+            <Mail className="h-4 w-4 text-gray-500"/>
+            <span>{property.bookingEmail}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Phone className="h-4 w-4 text-gray-500"/>
+            <span>{property.ownerContact}</span>
+          </div>
         </div>
         <div className="mt-4">
           <p className="text-sm font-medium">Sélectionnez les dates de réservation:</p>
@@ -188,6 +213,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
             selected={date}
             onSelect={setDate}
             className="rounded-md border"
+            defaultMonth={new Date()} // Sets the current month as the default
+            fromMonth={new Date()}
           />
           {date?.from && date?.to ? (
             <p className="text-sm mt-2">
@@ -197,30 +224,31 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
             <p className="text-sm mt-2">Veuillez sélectionner une plage de dates.</p>
           )}
         </div>
-        <Button onClick={handleBooking} className="mt-4" disabled={isBookingConfirmed}>
-          {isBookingConfirmed ? 'Réservation Confirmée!' : 'Réserver'}
+        <Button onClick={handleBooking} className="mt-4" disabled={!date?.from || !date?.to}>
+          Réserver
         </Button>
+
         <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[550px]">
             <DialogHeader>
-              <DialogTitle>Informations de réservation - ${property.price} / nuit</DialogTitle>
+              <DialogTitle>Informations de réservation</DialogTitle>
               <DialogDescription>
                 {date?.from && date?.to ? (
                   <>
-                    Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}.<br/>
-                    Entrez vos informations pour confirmer la réservation.
+                    Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}.
+                    <br/>
+                    Prix total: {totalPrice}€
+                    <br/>
+                    Veuillez entrer vos informations pour confirmer la réservation.
                   </>
                 ) : (
-                  'Entrez vos informations pour confirmer la réservation.'
+                  'Veuillez entrer vos informations pour confirmer la réservation.'
                 )}
               </DialogDescription>
             </DialogHeader>
-            {isBookingConfirmed ? (
-              <div className="flex justify-center items-center h-24">
-                <p className="text-green-500">Réservation Confirmée!</p>
-              </div>
-            ) : (
-              <div className="grid gap-4 py-4">
+
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Votre Nom</Label>
                   <Input
@@ -243,6 +271,9 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="address">Votre Adresse</Label>
                   <Input
@@ -265,11 +296,54 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
                     required
                   />
                 </div>
-                <Button type="submit" onClick={confirmBooking}>
-                  Confirmer la réservation
-                </Button>
               </div>
-            )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="adults">Nombre d'adultes</Label>
+                  <Select value={adults.toString()} onValueChange={(value) => setAdults(parseInt(value))}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="1"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({length: property.capacity}, (_, i) => i + 1).map((num) => (
+                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="children">Nombre d'enfants</Label>
+                  <Select value={children.toString()} onValueChange={(value) => setChildren(parseInt(value))}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="0"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({length: property.capacity - adults}, (_, i) => i).map((num) => (
+                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="additionalRequests">Demandes additionnelles</Label>
+                <Textarea
+                  id="additionalRequests"
+                  placeholder="Besoin d'un lit bébé? Allergies?"
+                  value={additionalRequests}
+                  onChange={(e) => setAdditionalRequests(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" onClick={confirmBooking}>
+                Confirmer la réservation - {totalPrice}€
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </CardFooter>
