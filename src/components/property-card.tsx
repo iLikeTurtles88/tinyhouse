@@ -20,6 +20,8 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Bed, Bath, Users} from 'lucide-react';
 import Image from "next/image";
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 
 interface Property {
   id: string;
@@ -49,6 +51,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
   const [updatedReviews, setUpdatedReviews] = useState(property.reviews);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  const [date, setDate] = React.useState<DateRange | undefined>(undefined);
+
   useEffect(() => {
     const getAiSummary = async () => {
       setIsLoadingSummary(true);
@@ -100,8 +104,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
           <Image
             src={property.imageUrls[0]}
             alt={`${property.name} - Vue générale`}
-            layout="fill"
-            objectFit="cover"
+            fill
+            style={{ objectFit: 'cover' }}
             className="transition-transform duration-500 hover:scale-110"
           />
         </div>
@@ -195,13 +199,28 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
           )}
         </section>
       </CardContent>
-      <CardFooter className="flex justify-between items-center p-4">
+      <CardFooter className="flex flex-col items-start p-4">
         <div>
           Contact : {property.ownerContact}
           <br/>
           Email : {property.bookingEmail}
         </div>
-        <Calendar/>
+        <div className="mt-4">
+          <p className="text-sm font-medium">Sélectionnez les dates de réservation:</p>
+          <Calendar
+            mode="range"
+            selected={date}
+            onSelect={setDate}
+            className="rounded-md border"
+          />
+          {date?.from && date?.to ? (
+            <p className="text-sm mt-2">
+              Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}
+            </p>
+          ) : (
+            <p className="text-sm mt-2">Veuillez sélectionner une plage de dates.</p>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );
