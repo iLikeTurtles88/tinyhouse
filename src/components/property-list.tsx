@@ -221,6 +221,7 @@ const PropertyList: React.FC = () => {
         selected={date}
         onSelect={(newDate) => {
           setDate(newDate);
+          onDateChange(newDate);
         }}
         numberOfMonths={2}
       />
