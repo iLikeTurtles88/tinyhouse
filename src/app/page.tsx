@@ -14,7 +14,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-96 flex items-center justify-center text-center text-white bg-gray-800 overflow-hidden">
         <Image
-          src="https://picsum.photos/id/944/1920/1080"
+          src="https://a0.muscache.com/im/pictures/miso/Hosting-57300906/original/649b7791-5f7a-49a8-b9f7-8b05c88ff176.jpeg?im_w=1920"
           alt="Tiny House Retreat"
           layout="fill"
           objectFit="cover"
@@ -47,4 +47,3 @@ export default function Home() {
     </div>
   );
 }
-
