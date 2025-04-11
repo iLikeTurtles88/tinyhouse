@@ -2,7 +2,15 @@
 
 import React, {useState} from 'react';
 import PropertyCard from '@/components/property-card';
-import {Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {Calendar} from "@/components/ui/calendar";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
@@ -273,169 +281,214 @@ const PropertyList: React.FC = () => {
       </div>
 
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[800px] w-full max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Réserver {selectedProperty?.name}</DialogTitle>
             <DialogDescription>
               {selectedProperty?.description}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nom:
-              </Label>
-              <Input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="col-span-3"
-              />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            {/* Image Section */}
+            <div className="md:col-span-1">
+              {selectedProperty?.imageUrls.map((url, index) => (
+                <div key={index} className="relative h-48 mb-2 rounded-md overflow-hidden">
+                  <Image
+                    src={url}
+                    alt={`${selectedProperty.name} - Image ${index + 1}`}
+                    fill
+                    style={{objectFit: 'cover'}}
+                    className="transition-transform duration-500 hover:scale-110"
+                  />
+                </div>
+              ))}
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">
-                Email:
-              </Label>
-              <Input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone" className="text-right">
-                Téléphone:
-              </Label>
-              <Input
-                type="tel"
-                id="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="address" className="text-right">
-                Adresse:
-              </Label>
-              <Input
-                type="text"
-                id="address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="city" className="text-right">
-                Ville:
-              </Label>
-              <Input
-                type="text"
-                id="city"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="postalCode" className="text-right">
-                Code Postal:
-              </Label>
-              <Input
-                type="text"
-                id="postalCode"
-                value={postalCode}
-                onChange={(e) => setPostalCode(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="country" className="text-right">
-                Pays:
-              </Label>
-              <Input
-                type="text"
-                id="country"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="adults" className="text-right">
-                Adultes:
-              </Label>
-              <select
-                id="adults"
-                className="col-span-3 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={adults}
-                onChange={(e) => setAdults(Number(e.target.value))}
-              >
-                {Array.from({ length: selectedProperty?.capacity || 4 }, (_, i) => i + 1).map(num => (
-                  <option key={num} value={num}>{num}</option>
-                ))}
-              </select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="children" className="text-right">
-                Enfants:
-              </Label>
-              <select
-                id="children"
-                className="col-span-3 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={children}
-                onChange={(e) => setChildren(Number(e.target.value))}
-              >
-                {Array.from({ length: selectedProperty ? selectedProperty.capacity - adults : 0 }, (_, i) => i).map(num => (
-                  <option key={num} value={num}>{num}</option>
-                ))}
-              </select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="dates" className="text-right">
-                Sélectionner les dates:
-              </Label>
-              <div className="col-span-3">
-                <DateRangePicker
-                  onDateChange={(dates) => {
-                    setStartDate(dates?.from);
-                    setEndDate(dates?.to);
-                  }}
-                />
-                {startDate && endDate && (
-                  <p className="text-sm text-gray-500 mt-2">
-                    {numberOfDays} nuits - {totalPrice}€
-                  </p>
+
+            {/* Form Section */}
+            <div className="md:col-span-1">
+              <div className="grid gap-4">
+                {/* Dates Selection */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="dates" className="text-right">
+                    Sélectionner les dates:
+                  </Label>
+                  <div className="col-span-3">
+                    <DateRangePicker
+                      onDateChange={(dates) => {
+                        setStartDate(dates?.from);
+                        setEndDate(dates?.to);
+                      }}
+                    />
+                    {startDate && endDate && (
+                      <p className="text-sm text-gray-500 mt-2">
+                        {numberOfDays} nuits - {totalPrice}€
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Total Price Display */}
+                {totalPrice > 0 && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">
+                      Prix total:
+                    </Label>
+                    <div className="col-span-3 font-bold">
+                      {totalPrice}€
+                    </div>
+                  </div>
                 )}
-              </div>
-            </div>
-            {totalPrice > 0 && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">
-                  Prix total:
-                </Label>
-                <div className="col-span-3 font-bold">
-                  {totalPrice}€
+
+                {/* Name */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Nom:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="email" className="text-right">
+                    Email:
+                  </Label>
+                  <Input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="phone" className="text-right">
+                    Téléphone:
+                  </Label>
+                  <Input
+                    type="tel"
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+
+                {/* Address */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="address" className="text-right">
+                    Adresse:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+
+                {/* City */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="city" className="text-right">
+                    Ville:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+
+                {/* Postal Code */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="postalCode" className="text-right">
+                    Code Postal:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="postalCode"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+
+                {/* Country */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="country" className="text-right">
+                    Pays:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="country"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+
+                {/* Adults */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="adults" className="text-right">
+                    Adultes:
+                  </Label>
+                  <select
+                    id="adults"
+                    className="col-span-3 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={adults}
+                    onChange={(e) => setAdults(Number(e.target.value))}
+                  >
+                    {Array.from({ length: selectedProperty?.capacity || 4 }, (_, i) => i + 1).map(num => (
+                      <option key={num} value={num}>{num}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Children */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="children" className="text-right">
+                    Enfants:
+                  </Label>
+                  <select
+                    id="children"
+                    className="col-span-3 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={children}
+                    onChange={(e) => setChildren(Number(e.target.value))}
+                  >
+                    {Array.from({ length: selectedProperty ? selectedProperty.capacity - adults : 0 }, (_, i) => i).map(num => (
+                      <option key={num} value={num}>{num}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Comments */}
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="comments" className="text-right">
+                    Commentaires:
+                  </Label>
+                  <Textarea
+                    id="comments"
+                    value={comments}
+                    onChange={(e) => setComments(e.target.value)}
+                    className="col-span-3"
+                    placeholder="Ajouter des commentaires ou demandes spéciales"
+                  />
                 </div>
               </div>
-            )}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="comments" className="text-right">
-                Commentaires:
-              </Label>
-              <Textarea
-                id="comments"
-                value={comments}
-                onChange={(e) => setComments(e.target.value)}
-                className="col-span-3"
-                placeholder="Ajouter des commentaires ou demandes spéciales"
-              />
             </div>
           </div>
+
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={onClose}>
               Annuler
