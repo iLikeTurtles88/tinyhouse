@@ -207,27 +207,6 @@ const PropertyList: React.FC = () => {
     onClose();
   };
 
-  const DateRangePicker = ({onDateChange}: { onDateChange: (dates: { from?: Date, to?: Date }) => void }) => {
-    const [date, setDate] = React.useState<{ from?: Date, to?: Date } | undefined>(undefined);
-
-    React.useEffect(() => {
-      onDateChange(date || {});
-    }, [date, onDateChange]);
-
-    return (
-      <Calendar
-        mode="range"
-        defaultMonth={date?.from}
-        selected={date}
-        onSelect={(newDate) => {
-          setDate(newDate);
-          onDateChange(newDate);
-        }}
-        numberOfMonths={2}
-      />
-    )
-  }
-
   const onClose = () => {
     setIsBookingModalOpen(false);
     setSelectedProperty(null);
@@ -276,7 +255,7 @@ const PropertyList: React.FC = () => {
                 <div key={index} className="relative h-48 mb-2 rounded-md overflow-hidden">
                   <Image
                     src={url}
-                    alt={`${selectedProperty.name} - Image ${index + 1}`}
+                    alt={`${selectedProperty?.name} - Image ${index + 1}`}
                     fill
                     style={{objectFit: 'cover'}}
                     className="transition-transform duration-500 hover:scale-110"
@@ -288,25 +267,38 @@ const PropertyList: React.FC = () => {
             {/* Form Section */}
             <div className="lg:col-span-2 md:col-span-1 col-span-1">
               <div className="grid gap-4">
-                {/* Dates Selection */}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="dates" className="text-right">
-                    Sélectionner les dates:
-                  </Label>
-                  <div className="col-span-3">
-                    <DateRangePicker
-                      onDateChange={(dates) => {
-                        setStartDate(dates?.from);
-                        setEndDate(dates?.to);
-                      }}
-                    />
-                    {startDate && endDate && (
-                      <p className="text-sm text-gray-500 mt-2">
-                        {numberOfDays} nuits - {totalPrice}€
-                      </p>
-                    )}
+                   {/* Dates Selection */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="dates" className="text-right">
+                      Sélectionner les dates:
+                    </Label>
+                    <div className="col-span-3">
+                      <Calendar
+                        mode="range"
+                        defaultMonth={startDate}
+                        selected={{
+                          from: startDate,
+                          to: endDate,
+                        }}
+                        onSelect={(date) => {
+                          if (date?.from) {
+                            setStartDate(date.from);
+                            setEndDate(date.to);
+                          } else {
+                            setStartDate(undefined);
+                            setEndDate(undefined);
+                          }
+                        }}
+                        numberOfMonths={2}
+                        className="mx-auto mt-2 rounded-md border"
+                      />
+                      {startDate && endDate && (
+                        <p className="text-sm text-gray-500 mt-2">
+                          {numberOfDays} nuits - {totalPrice}€
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
 
                 {/* Total Price Display */}
                 {totalPrice > 0 && (
