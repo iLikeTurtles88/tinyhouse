@@ -211,13 +211,14 @@ const PropertyList: React.FC = () => {
 
   const DateRangePicker = ({onDateChange}: { onDateChange: (dates: { from?: Date, to?: Date }) => void }) => {
     const [date, setDate] = React.useState<{ from?: Date, to?: Date } | undefined>(undefined);
+    const [open, setOpen] = React.useState(false);
 
     React.useEffect(() => {
       onDateChange(date || {});
     }, [date, onDateChange]);
 
     return (
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant={"outline"}
@@ -243,9 +244,18 @@ const PropertyList: React.FC = () => {
             mode="range"
             defaultMonth={date?.from}
             selected={date}
-            onSelect={setDate}
+            onSelect={(newDate) => {
+              setDate(newDate);
+              if (newDate?.to) {
+                setOpen(false); // Close the popover when both dates are selected
+              }
+            }}
+            onMonthChange={(month) => {
+              // Keep the popover open when the month changes
+              setOpen(true);
+            }}
             numberOfMonths={2}
-            disableCloseOnSelect
+            disableCloseOnSelect={false}
           />
         </PopoverContent>
       </Popover>
