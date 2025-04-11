@@ -25,6 +25,7 @@ import {toast} from "@/hooks/use-toast";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import Image from "next/image";
 import {ScrollArea} from "@/components/ui/scroll-area";
+import {LocationDetails} from "@/services/location";
 
 interface Property {
   id: string;
@@ -244,6 +245,7 @@ const PropertyList: React.FC = () => {
             selected={date}
             onSelect={setDate}
             numberOfMonths={2}
+            disableCloseOnSelect
           />
         </PopoverContent>
       </Popover>
