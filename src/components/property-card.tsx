@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, {useState} from 'react';
 import {
   Card,
   CardContent,
@@ -10,9 +10,7 @@ import {
 } from "@/components/ui/card";
 import {Mail, Phone, Bed, Bath, Users} from 'lucide-react';
 import Image from "next/image";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Label} from "@/components/ui/label";
-import {Textarea} from "@/components/ui/textarea";
 
 interface Property {
   id: string;
@@ -35,10 +33,6 @@ interface PropertyCardProps {
 }
 
 const PropertyCard: React.FC<PropertyCardProps> = ({property, onSelectProperty}) => {
-
-  const [adults, setAdults] = React.useState<number>(1);
-  const [children, setChildren] = React.useState<number>(0);
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined);
 
   const handleSelect = () => {
     onSelectProperty(property);

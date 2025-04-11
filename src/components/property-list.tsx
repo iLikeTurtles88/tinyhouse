@@ -1,3 +1,5 @@
+"use client";
+
 import React, {useState} from 'react';
 import PropertyCard from '@/components/property-card';
 import {
@@ -420,9 +422,7 @@ const PropertyList: React.FC = () => {
                     onChange={(e) => setAdults(Number(e.target.value))}
                   >
                     {Array.from({ length: selectedProperty?.capacity || 4 }, (_, i) => i + 1).map(num => (
-                      
-                        {num}
-                      
+                      <option key={num} value={num}>{num}</option>
                     ))}
                   </select>
                 </div>
@@ -439,9 +439,7 @@ const PropertyList: React.FC = () => {
                     onChange={(e) => setChildren(Number(e.target.value))}
                   >
                     {Array.from({ length: selectedProperty ? selectedProperty.capacity - adults : 0 }, (_, i) => i).map(num => (
-                      
-                        {num}
-                      
+                      <option key={num} value={num}>{num}</option>
                     ))}
                   </select>
                 </div>
