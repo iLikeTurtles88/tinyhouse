@@ -230,7 +230,7 @@ const PropertyList: React.FC = () => {
             <PropertyCard
               key={property.id}
               property={property}
-              onClick={() => handlePropertyClick(property)}
+              onSelectProperty={handlePropertyClick}
             />
           
         ))}

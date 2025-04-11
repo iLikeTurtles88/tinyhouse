@@ -44,7 +44,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property, onSelectProperty})
   };
 
   return (
-    <Card className="bg-secondary shadow-md overflow-hidden rounded-lg">
+    <Card className="bg-secondary shadow-md overflow-hidden rounded-lg" onClick={() => onSelectProperty(property)}>
       <CardHeader className="p-4">
         <CardTitle className="text-xl font-semibold">{property.name}</CardTitle>
         <CardDescription className="text-gray-500">{property.location}</CardDescription>
