@@ -1,5 +1,3 @@
-"use client";
-
 import React, {useState} from 'react';
 import PropertyCard from '@/components/property-card';
 import {
@@ -228,18 +226,18 @@ const PropertyList: React.FC = () => {
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {dummyProperties.map((property) => (
-          <div
-            key={property.id}
-            onClick={() => handlePropertyClick(property)}
-            style={{cursor: 'pointer'}}
-          >
-            <PropertyCard property={property}/>
-          </div>
+          
+            <PropertyCard
+              key={property.id}
+              property={property}
+              onClick={() => handlePropertyClick(property)}
+            />
+          
         ))}
       </div>
 
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
-        <DialogContent className="sm:max-w-[1100px] w-full max-h-[90vh]">
+        <DialogContent className="sm:max-w-[1200px] w-full max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Réserver {selectedProperty?.name}</DialogTitle>
             <DialogDescription>
@@ -422,7 +420,9 @@ const PropertyList: React.FC = () => {
                     onChange={(e) => setAdults(Number(e.target.value))}
                   >
                     {Array.from({ length: selectedProperty?.capacity || 4 }, (_, i) => i + 1).map(num => (
-                      <option key={num} value={num}>{num}</option>
+                      
+                        {num}
+                      
                     ))}
                   </select>
                 </div>
@@ -439,7 +439,9 @@ const PropertyList: React.FC = () => {
                     onChange={(e) => setChildren(Number(e.target.value))}
                   >
                     {Array.from({ length: selectedProperty ? selectedProperty.capacity - adults : 0 }, (_, i) => i).map(num => (
-                      <option key={num} value={num}>{num}</option>
+                      
+                        {num}
+                      
                     ))}
                   </select>
                 </div>
