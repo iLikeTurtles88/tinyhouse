@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, {useEffect, useState} from 'react';
@@ -18,6 +19,7 @@ import {useToast} from "@/hooks/use-toast";
 import {summarizeReviews} from "@/ai/flows/review-summary";
 import {Skeleton} from "@/components/ui/skeleton";
 import {ScrollArea} from "@/components/ui/scroll-area";
+import {Bed, Bath, Users} from 'lucide-react';
 
 interface Property {
   id: string;
@@ -85,46 +87,65 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
     }
   };
   return (
-    <Card className="mb-4">
-      <CardHeader>
-        <CardTitle>{property.name}</CardTitle>
-        <CardDescription>{property.location}</CardDescription>
+    <Card className="bg-secondary shadow-md overflow-hidden rounded-lg">
+      <CardHeader className="p-4">
+        <CardTitle className="text-xl font-semibold">{property.name}</CardTitle>
+        <CardDescription className="text-gray-500">{property.location}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex overflow-x-auto space-x-2 mb-4">
+      <CardContent className="p-4">
+        {/* Image Gallery */}
+        <div className="flex overflow-x-auto space-x-3 mb-4">
           {property.imageUrls.map((imageUrl, index) => (
             <img
               key={index}
               src={imageUrl}
               alt={`${property.name} - Image ${index + 1}`}
-              className="w-64 h-48 object-cover rounded-md flex-shrink-0"
+              className="w-64 h-40 object-cover rounded-md flex-shrink-0"
             />
           ))}
         </div>
-        <video src={property.videoUrl} className="w-full aspect-video rounded-md" controls muted/>
-        <p>{property.description}</p>
-        <p className="font-bold mt-2">Prix: ${property.price}</p>
-        <p>Capacité: {property.capacity} invités</p>
-        <p>Chambres: {property.bedrooms}</p>
-        <p>Salles de bain: {property.bathrooms}</p>
-        <div className="flex space-x-2 mt-2">
+
+        {/* Property Details */}
+        <p className="mb-2">{property.description}</p>
+
+        <div className="flex items-center space-x-4 mb-3">
+          <div className="flex items-center text-gray-600">
+            <Bed className="h-5 w-5 mr-1"/>
+            <span>{property.bedrooms} Chambres</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <Bath className="h-5 w-5 mr-1"/>
+            <span>{property.bathrooms} Salles de bain</span>
+          </div>
+          <div className="flex items-center text-gray-600">
+            <Users className="h-5 w-5 mr-1"/>
+            <span>{property.capacity} Invités</span>
+          </div>
+        </div>
+
+        <p className="font-bold mb-3">Prix: ${property.price} / nuit</p>
+
+        {/* Amenities */}
+        <div className="flex space-x-2 mb-4">
           {property.amenities.map((amenity) => (
-            <span key={amenity} className="px-2 py-1 rounded-full bg-secondary text-secondary-foreground">{amenity}</span>
+            <span key={amenity} className="px-3 py-1 rounded-full bg-accent text-accent-foreground text-sm">{amenity}</span>
           ))}
         </div>
-        <section className="mt-4">
+
+        {/* Reviews Section */}
+        <section className="mb-4">
           <h3 className="text-lg font-semibold mb-2">Avis des clients</h3>
-          <ScrollArea className="h-[200px] w-full rounded-md border p-4">
+          <ScrollArea className="h-[150px] w-full rounded-md border p-3">
             {updatedReviews.length > 0 ? (
-              <ul className="list-disc pl-5">
+              <ul className="list-disc pl-5 text-sm">
                 {updatedReviews.map((review, index) => (
-                  <li key={index} className="mb-2">
+                  <li key={index} className="mb-1">
                     {review}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p>Aucun avis disponible pour le moment.</p>
+              <p className="text-sm">Aucun avis disponible pour le moment.</p>
             )}
           </ScrollArea>
           <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
@@ -157,16 +178,18 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
             </DialogContent>
           </Dialog>
         </section>
-        <section className="mt-4">
+
+        {/* AI Review Summary */}
+        <section>
           <h3 className="text-lg font-semibold mb-2">Résumé des avis (IA)</h3>
           {isLoadingSummary ? (
             <Skeleton className="h-10 w-full"/>
           ) : (
-            <p>{aiSummary ?? 'Aucun résumé disponible.'}</p>
+            <p className="text-sm">{aiSummary ?? 'Aucun résumé disponible.'}</p>
           )}
         </section>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex justify-between items-center p-4">
         <Button>Réserver</Button>
         <Calendar/>
       </CardFooter>
