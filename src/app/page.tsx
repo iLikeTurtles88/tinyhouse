@@ -2,7 +2,6 @@
 
 import PropertyList from '@/components/property-list';
 import React, {useState} from "react";
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 export default function Home() {
@@ -15,13 +14,13 @@ export default function Home() {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Tiny Haven Retreats</h1>
+        <h1 className="text-2xl font-bold">Havres Minuscules de Retraite</h1>
         <Select onValueChange={handleLocationChange}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by Location"/>
+            <SelectValue placeholder="Filtrer par Lieu"/>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Locations</SelectItem>
+            <SelectItem value="all">Tous les Lieux</SelectItem>
             <SelectItem value="Asheville, NC">Asheville, NC</SelectItem>
             <SelectItem value="Malibu, CA">Malibu, CA</SelectItem>
             <SelectItem value="Lake Tahoe, CA">Lake Tahoe, CA</SelectItem>
@@ -35,4 +34,3 @@ export default function Home() {
     </div>
   );
 }
-
