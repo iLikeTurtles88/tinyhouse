@@ -27,7 +27,7 @@ import {Bed, Bath, Users} from 'lucide-react';
 import Image from "next/image";
 import {DateRange} from "react-day-picker";
 import {format} from "date-fns";
-import {Textarea} from "@/components/ui/textarea";
+import {Textarea} from "@/components/ui/textarea"; // Import Textarea
 
 interface Property {
   id: string;
@@ -52,31 +52,11 @@ interface PropertyCardProps {
 
 const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
   const {toast} = useToast();
-  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
-  const [newReview, setNewReview] = useState('');
-  const [updatedReviews, setUpdatedReviews] = useState(property.reviews);
-  const [date, setDate] = React.useState<DateRange | undefined>(undefined);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+  const [date, setDate] = useState<DateRange | undefined>(undefined);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-
-  const handleAddReview = () => {
-    if (newReview.trim() !== '') {
-      setUpdatedReviews([...updatedReviews, newReview]);
-      setNewReview('');
-      setIsReviewDialogOpen(false);
-      toast({
-        title: 'Avis ajouté avec succès!',
-        description: 'Votre avis a été ajouté à la liste.',
-      });
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur',
-        description: 'Veuillez entrer un avis valide.',
-      });
-    }
-  };
+  const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
 
   const handleBooking = () => {
     if (date?.from && date?.to) {
@@ -92,15 +72,30 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
 
   const confirmBooking = () => {
     if (name.trim() !== '' && email.trim() !== '') {
+      // Basic email validation
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        toast({
+          variant: 'destructive',
+          title: 'Erreur',
+          description: 'Veuillez entrer une adresse e-mail valide.',
+        });
+        return;
+      }
+
       localStorage.setItem(`booking_${property.id}`, JSON.stringify({date, name, email}));
+      setIsBookingConfirmed(true);
 
       toast({
         title: 'Réservation Confirmée!',
         description: `Votre réservation du ${format(date.from!, "PPP")} au ${format(date.to!, "PPP")} est confirmée.`,
       });
-      setIsBookingDialogOpen(false);
-      setName('');
-      setEmail('');
+      setTimeout(() => {
+        setIsBookingDialogOpen(false);
+        setIsBookingConfirmed(false);
+        setName('');
+        setEmail('');
+        setDate(undefined);
+      }, 3000);
     } else {
       toast({
         variant: 'destructive',
@@ -159,53 +154,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
             </span>
           ))}
         </div>
-
-        {/* Reviews Section */}
-        <section className="mb-4">
-          <h3 className="text-lg font-semibold mb-2">Avis des clients</h3>
-          <ScrollArea className="h-[150px] w-full rounded-md border p-3">
-            {updatedReviews.length > 0 ? (
-              <ul className="list-disc pl-5 text-sm">
-                {updatedReviews.map((review, index) => (
-                  <li key={index} className="mb-1">
-                    {review}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm">Aucun avis disponible pour le moment.</p>
-            )}
-          </ScrollArea>
-          <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="mt-2">
-                Ajouter un avis
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Ajouter un avis</DialogTitle>
-                <DialogDescription>
-                  Partagez votre expérience avec cette tiny house.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="review">Votre avis</Label>
-                  <Textarea
-                    id="review"
-                    value={newReview}
-                    onChange={(e) => setNewReview(e.target.value)}
-                    placeholder="Écrivez votre avis ici"
-                  />
-                </div>
-              </div>
-              <Button type="submit" onClick={handleAddReview}>
-                Soumettre
-              </Button>
-            </DialogContent>
-          </Dialog>
-        </section>
       </CardContent>
       <CardFooter className="flex flex-col items-start p-4">
         <div>
@@ -229,44 +177,57 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
             <p className="text-sm mt-2">Veuillez sélectionner une plage de dates.</p>
           )}
         </div>
-        <Button onClick={handleBooking} className="mt-4">
-          Réserver
+        <Button onClick={handleBooking} className="mt-4" disabled={isBookingConfirmed}>
+          {isBookingConfirmed ? 'Réservation Confirmée!' : 'Réserver'}
         </Button>
         <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Informations de réservation</DialogTitle>
               <DialogDescription>
-                Entrez votre nom et votre adresse e-mail pour confirmer la réservation.
+                {date?.from && date?.to ? (
+                  <>
+                    Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}.<br/>
+                    Entrez votre nom et votre adresse e-mail pour confirmer la réservation.
+                  </>
+                ) : (
+                  'Entrez votre nom et votre adresse e-mail pour confirmer la réservation.'
+                )}
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Votre Nom</Label>
-                <Input
-                  type="text"
-                  id="name"
-                  placeholder="Votre Nom"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
+            {isBookingConfirmed ? (
+              <div className="flex justify-center items-center h-24">
+                <p className="text-green-500">Réservation Confirmée!</p>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Votre Email</Label>
-                <Input
-                  type="email"
-                  id="email"
-                  placeholder="Votre Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
+            ) : (
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Votre Nom</Label>
+                  <Input
+                    type="text"
+                    id="name"
+                    placeholder="Votre Nom"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Votre Email</Label>
+                  <Input
+                    type="email"
+                    id="email"
+                    placeholder="Votre Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" onClick={confirmBooking}>
+                  Confirmer la réservation
+                </Button>
               </div>
-            </div>
-            <Button type="submit" onClick={confirmBooking}>
-              Confirmer la réservation
-            </Button>
+            )}
           </DialogContent>
         </Dialog>
       </CardFooter>
