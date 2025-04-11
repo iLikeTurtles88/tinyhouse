@@ -5,9 +5,9 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
+  CardFooter // Import CardFooter
 } from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Calendar} from "@/components/ui/calendar";
@@ -17,8 +17,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogFooter // Import DialogFooter
+  DialogFooter as DialogFooterRadix,
 } from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
@@ -28,7 +27,7 @@ import {Bed, Bath, Users, Mail, Phone} from 'lucide-react';
 import Image from "next/image";
 import {DateRange} from "react-day-picker";
 import {format, differenceInDays} from "date-fns";
-import {Textarea} from "@/components/ui/textarea"; // Import Textarea
+import {Textarea} from "@/components/ui/textarea";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 interface Property {
@@ -40,12 +39,11 @@ interface Property {
   videoUrl: string;
   price: number;
   amenities: string[];
-  reviews: string[];
   capacity: number;
   bedrooms: number;
   bathrooms: number;
-  ownerContact: string; // Added owner contact info
-  bookingEmail: string; // Added booking email
+  ownerContact: string;
+  bookingEmail: string;
 }
 
 interface PropertyCardProps {
@@ -64,6 +62,9 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+
 
   // Recalculate total price when date or price changes
   useEffect(() => {
@@ -78,12 +79,15 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
   const handleBooking = () => {
     if (date?.from && date?.to) {
       setIsBookingDialogOpen(true);
+      setBookingError(null); // Reset booking error when the dialog opens
+
     } else {
       toast({
         variant: 'destructive',
         title: 'Erreur',
         description: 'Veuillez sélectionner une plage de dates pour effectuer une réservation.',
       });
+      setBookingError('Veuillez sélectionner une plage de dates pour effectuer une réservation.');
     }
   };
 
@@ -96,6 +100,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
           title: 'Erreur',
           description: 'Veuillez entrer une adresse e-mail valide.',
         });
+        setBookingError('Veuillez entrer une adresse e-mail valide.');
         return;
       }
 
@@ -106,6 +111,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
           title: 'Erreur',
           description: 'Veuillez entrer un numéro de téléphone valide (10 chiffres).',
         });
+        setBookingError('Veuillez entrer un numéro de téléphone valide (10 chiffres).');
         return;
       }
 
@@ -135,6 +141,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
         setAdults(1);
         setChildren(0);
         setDate(undefined);
+        setBookingError(null);
       }, 3000);
     } else {
       toast({
@@ -142,6 +149,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
         title: 'Erreur',
         description: 'Veuillez remplir tous les champs du formulaire.',
       });
+      setBookingError('Veuillez remplir tous les champs du formulaire.');
     }
   };
 
@@ -153,7 +161,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
       </CardHeader>
       <CardContent className="p-4">
         {/* Image Gallery */}
-        <div className="relative h-64 mb-4 rounded-md overflow-hidden">
+        <div className="relative h-64 mb-4 rounded-md overflow-hidden cursor-pointer" onClick={() => setIsImageModalOpen(true)}>
           <Image
             src={property.imageUrls[0]}
             alt={`${property.name} - Vue générale`}
@@ -206,144 +214,166 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
             <span>{property.ownerContact}</span>
           </div>
         </div>
-        <div className="mt-4">
-          <p className="text-sm font-medium">Sélectionnez les dates de réservation:</p>
-          <Calendar
-            mode="range"
-            selected={date}
-            onSelect={setDate}
-            className="rounded-md border"
-            defaultMonth={new Date()} // Sets the current month as the default
-            fromMonth={new Date()}
-          />
-          {date?.from && date?.to ? (
-            <p className="text-sm mt-2">
-              Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}
-            </p>
-          ) : (
-            <p className="text-sm mt-2">Veuillez sélectionner une plage de dates.</p>
-          )}
-        </div>
-        <Button onClick={handleBooking} className="mt-4" disabled={!date?.from || !date?.to}>
-          Réserver
-        </Button>
 
-        <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+
+        <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
           <DialogContent className="sm:max-w-[550px]">
             <DialogHeader>
-              <DialogTitle>Informations de réservation</DialogTitle>
+              <DialogTitle>{property.name}</DialogTitle>
               <DialogDescription>
-                {date?.from && date?.to ? (
-                  <>
-                    Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}.
-                    <br/>
-                    Prix total: {totalPrice}€
-                    <br/>
-                    Veuillez entrer vos informations pour confirmer la réservation.
-                  </>
-                ) : (
-                  'Veuillez entrer vos informations pour confirmer la réservation.'
-                )}
+                {property.description}
+                <br/>
+                {property.location}
+                <br/>
+                Prix: {property.price}€ / nuit
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Votre Nom</Label>
-                  <Input
-                    type="text"
-                    id="name"
-                    placeholder="Votre Nom"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Votre Email</Label>
-                  <Input
-                    type="email"
-                    id="email"
-                    placeholder="Votre Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="address">Votre Adresse</Label>
-                  <Input
-                    type="text"
-                    id="address"
-                    placeholder="Votre Adresse"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="phone">Votre Numéro de Téléphone</Label>
-                  <Input
-                    type="tel"
-                    id="phone"
-                    placeholder="Votre Numéro de Téléphone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="adults">Nombre d'adultes</Label>
-                  <Select value={adults.toString()} onValueChange={(value) => setAdults(parseInt(value))}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="1"/>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({length: property.capacity}, (_, i) => i + 1).map((num) => (
-                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="children">Nombre d'enfants</Label>
-                  <Select value={children.toString()} onValueChange={(value) => setChildren(parseInt(value))}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="0"/>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({length: property.capacity - adults}, (_, i) => i).map((num) => (
-                        <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="additionalRequests">Demandes additionnelles</Label>
-                <Textarea
-                  id="additionalRequests"
-                  placeholder="Besoin d'un lit bébé? Allergies?"
-                  value={additionalRequests}
-                  onChange={(e) => setAdditionalRequests(e.target.value)}
-                  rows={3}
-                />
-              </div>
+            {/* Calendar and Booking Section */}
+            <div className="mt-4">
+              <p className="text-sm font-medium">Sélectionnez les dates de réservation:</p>
+              <Calendar
+                mode="range"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-md border"
+                defaultMonth={new Date()} // Sets the current month as the default
+                fromMonth={new Date()}
+              />
+              {date?.from && date?.to ? (
+                <p className="text-sm mt-2">
+                  Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}
+                </p>
+              ) : (
+                <p className="text-sm mt-2">Veuillez sélectionner une plage de dates.</p>
+              )}
             </div>
+            <Button onClick={handleBooking} className="mt-4" disabled={!date?.from || !date?.to}>
+              Réserver
+            </Button>
 
-            <DialogFooter>
-              <Button type="button" onClick={confirmBooking}>
-                Confirmer la réservation - {totalPrice}€
-              </Button>
-            </DialogFooter>
+            {/* Booking Information Dialog */}
+            <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+              <DialogContent className="sm:max-w-[550px]">
+                <DialogHeader>
+                  <DialogTitle>Informations de réservation</DialogTitle>
+                  <DialogDescription>
+                    {date?.from && date?.to ? (
+                      <>
+                        Vous avez sélectionné du {format(date.from, "PPP")} au {format(date.to, "PPP")}.
+                        <br/>
+                        Prix total: {totalPrice}€
+                        <br/>
+                        Veuillez entrer vos informations pour confirmer la réservation.
+                      </>
+                    ) : (
+                      'Veuillez entrer vos informations pour confirmer la réservation.'
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="name">Votre Nom</Label>
+                      <Input
+                        type="text"
+                        id="name"
+                        placeholder="Votre Nom"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="email">Votre Email</Label>
+                      <Input
+                        type="email"
+                        id="email"
+                        placeholder="Votre Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="address">Votre Adresse</Label>
+                      <Input
+                        type="text"
+                        id="address"
+                        placeholder="Votre Adresse"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="phone">Votre Numéro de Téléphone</Label>
+                      <Input
+                        type="tel"
+                        id="phone"
+                        placeholder="Votre Numéro de Téléphone"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="adults">Nombre d'adultes</Label>
+                      <Select value={adults.toString()} onValueChange={(value) => setAdults(parseInt(value))}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="1"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({length: property.capacity}, (_, i) => i + 1).map((num) => (
+                            <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="children">Nombre d'enfants</Label>
+                      <Select value={children.toString()} onValueChange={(value) => setChildren(parseInt(value))}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="0"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({length: property.capacity - adults}, (_, i) => i).map((num) => (
+                            <SelectItem key={num} value={num.toString()}>{num}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="additionalRequests">Demandes additionnelles</Label>
+                    <Textarea
+                      id="additionalRequests"
+                      placeholder="Besoin d'un lit bébé? Allergies?"
+                      value={additionalRequests}
+                      onChange={(e) => setAdditionalRequests(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                {bookingError && (
+                  <p className="mt-4 text-center text-red-500">{bookingError}</p>
+                )}
+
+                <DialogFooterRadix>
+                  <Button type="button" onClick={confirmBooking}>
+                    Confirmer la réservation - {totalPrice}€
+                  </Button>
+                </DialogFooterRadix>
+              </DialogContent>
+            </Dialog>
           </DialogContent>
         </Dialog>
       </CardFooter>

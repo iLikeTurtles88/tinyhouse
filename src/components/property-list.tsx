@@ -106,7 +106,7 @@ const dummyProperties: Property[] = [
     ],
     videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
     price: 300,
-    amenities: ['WiFi', 'Gym', 'Concierge', 'Vues sur la ville'],
+    amenities: ['WiFi', 'Salle de gym', 'Concierge', 'Vues sur la ville'],
     capacity: 2,
     bedrooms: 1,
     bathrooms: 1,
