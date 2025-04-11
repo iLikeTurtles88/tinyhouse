@@ -47,9 +47,10 @@ const dummyProperties: Property[] = [
     description: "Évadez-vous dans cette cabane confortable nichée au cœur des montagnes. Profitez de vues à couper le souffle et d'un environnement paisible.",
     location: 'Ardennes, Belgique',
     imageUrls: [
-      '/images/cabane_montagnarde_1.jpg',
-      '/images/cabane_montagnarde_2.jpg',
-      '/images/cabane_montagnarde_3.jpg',
+      '/images/ardennes_1.jpg',
+      '/images/ardennes_2.jpg',
+      '/images/ardennes_1.jpg',
+      '/images/ardennes_2.jpg',
     ],
     price: 175,
     amenities: ['WiFi', 'Cuisine', 'Cheminée', 'Jacuzzi'],
@@ -65,8 +66,10 @@ const dummyProperties: Property[] = [
     description: "Détendez-vous dans cette superbe maison de plage avec vue panoramique sur l'océan. Parfait pour une escapade en famille ou une escapade romantique.",
     location: 'Knokke, Belgique',
     imageUrls: [
-      '/images/maison_plage_1.jpg',
-      '/images/maison_plage_2.jpg',
+      '/images/knokke_1.jpg',
+      '/images/knokke_2.jpg',
+      '/images/knokke_1.jpg',
+      '/images/knokke_2.jpg',
     ],
     price: 250,
     amenities: ['WiFi', 'Accès à la plage', 'Balcon', 'Animaux acceptés'],
@@ -82,8 +85,10 @@ const dummyProperties: Property[] = [
     description: "Découvrez la tranquillité de la vie au bord du lac dans ce charmant cottage. Profitez de la baignade, de la pêche et de la navigation de plaisance directement depuis votre porte.",
     location: 'Gand, Belgique',
     imageUrls: [
-      '/images/cottage_lac_1.jpg',
-      '/images/cottage_lac_2.jpg',
+      '/images/gand_1.jpg',
+      '/images/gand_2.jpg',
+      '/images/gand_1.jpg',
+      '/images/gand_2.jpg',
     ],
     price: 200,
     amenities: ['WiFi', 'Cuisine', 'Quai', 'Kayaks'],
@@ -99,8 +104,10 @@ const dummyProperties: Property[] = [
     description: "Découvrez la beauté du désert dans cette retraite rustique. Profitez de l'observation des étoiles, de la randonnée et de l'exploration du paysage unique.",
     location: 'Bruges, Belgique',
     imageUrls: [
-      '/images/desert_retreat_1.jpg',
-      '/images/desert_retreat_2.jpg',
+      '/images/bruges_1.jpg',
+      '/images/bruges_2.jpg',
+      '/images/bruges_1.jpg',
+      '/images/bruges_2.jpg',
     ],
     price: 150,
     amenities: ['WiFi', 'Cuisine', 'Foyer', 'Sentiers de randonnée'],
@@ -116,8 +123,10 @@ const dummyProperties: Property[] = [
     description: "Découvrez la vie citadine dans cet appartement élégant et moderne. Profitez d'un accès facile aux restaurants, aux boutiques et aux attractions.",
     location: 'Anvers, Belgique',
     imageUrls: [
-      '/images/urban_apartment_1.jpg',
-      '/images/urban_apartment_2.jpg',
+      '/images/anvers_1.jpg',
+      '/images/anvers_2.jpg',
+      '/images/anvers_1.jpg',
+      '/images/anvers_2.jpg',
     ],
     price: 300,
     amenities: ['WiFi', 'Salle de gym', 'Concierge', 'Vues sur la ville'],
@@ -133,8 +142,10 @@ const dummyProperties: Property[] = [
     description: "Évadez-vous au paradis dans ce charmant bungalow insulaire. Profitez de plages de sable blanc, d'eaux cristallines et d'une végétation tropicale luxuriante.",
     location: 'Liège, Belgique',
     imageUrls: [
-      '/images/tropical_bungalow_1.jpg',
-      '/images/tropical_bungalow_2.jpg',
+      '/images/liege_1.jpg',
+      '/images/liege_2.jpg',
+      '/images/liege_1.jpg',
+      '/images/liege_2.jpg',
     ],
     price: 275,
     amenities: ['WiFi', 'Accès à la plage', 'Snorkeling', 'Hamac'],
@@ -154,10 +165,10 @@ const PropertyList: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [country, setCountry] = useState('');
+    const [address, setAddress] = useState('');
+    const [city, setCity] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [country, setCountry] = useState('');
   const [adults, setAdults] = useState<number>(1);
   const [children, setChildren] = useState<number>(0);
   const [comments, setComments] = useState('');
@@ -215,10 +226,10 @@ const PropertyList: React.FC = () => {
     setName('');
     setEmail('');
     setPhone('');
-    setAddress('');
-    setCity('');
-    setPostalCode('');
-    setCountry('');
+      setAddress('');
+      setCity('');
+      setPostalCode('');
+      setCountry('');
     setAdults(1);
     setChildren(0);
     setComments('');
@@ -228,13 +239,11 @@ const PropertyList: React.FC = () => {
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {dummyProperties.map((property) => (
-          
             <PropertyCard
               key={property.id}
               property={property}
               onSelectProperty={handlePropertyClick}
             />
-          
         ))}
       </div>
 
@@ -354,61 +363,61 @@ const PropertyList: React.FC = () => {
                   />
                 </div>
 
-                {/* Address */}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="address" className="text-right">
-                    Adresse:
-                  </Label>
-                  <Input
-                    type="text"
-                    id="address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
+                  {/* Address */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="address" className="text-right">
+                          Adresse:
+                      </Label>
+                      <Input
+                          type="text"
+                          id="address"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          className="col-span-3"
+                      />
+                  </div>
 
-                {/* City */}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="city" className="text-right">
-                    Ville:
-                  </Label>
-                  <Input
-                    type="text"
-                    id="city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
+                  {/* City */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="city" className="text-right">
+                          Ville:
+                      </Label>
+                      <Input
+                          type="text"
+                          id="city"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className="col-span-3"
+                      />
+                  </div>
 
-                {/* Postal Code */}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="postalCode" className="text-right">
-                    Code Postal:
-                  </Label>
-                  <Input
-                    type="text"
-                    id="postalCode"
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
+                  {/* Postal Code */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="postalCode" className="text-right">
+                          Code Postal:
+                      </Label>
+                      <Input
+                          type="text"
+                          id="postalCode"
+                          value={postalCode}
+                          onChange={(e) => setPostalCode(e.target.value)}
+                          className="col-span-3"
+                      />
+                  </div>
 
-                {/* Country */}
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="country" className="text-right">
-                    Pays:
-                  </Label>
-                  <Input
-                    type="text"
-                    id="country"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="col-span-3"
-                  />
-                </div>
+                  {/* Country */}
+                  <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="country" className="text-right">
+                          Pays:
+                      </Label>
+                      <Input
+                          type="text"
+                          id="country"
+                          value={country}
+                          onChange={(e) => setCountry(e.target.value)}
+                          className="col-span-3"
+                      />
+                  </div>
 
                 {/* Adults */}
                 <div className="grid grid-cols-4 items-center gap-4">
