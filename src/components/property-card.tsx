@@ -34,6 +34,8 @@ interface Property {
   capacity: number;
   bedrooms: number;
   bathrooms: number;
+  ownerContact: string; // Added owner contact info
+  bookingEmail: string; // Added booking email
 }
 
 interface PropertyCardProps {
@@ -194,7 +196,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({property}) => {
         </section>
       </CardContent>
       <CardFooter className="flex justify-between items-center p-4">
-        <Button>Réserver</Button>
+        <div>
+          Contact : {property.ownerContact}
+          <br/>
+          Email : {property.bookingEmail}
+        </div>
         <Calendar/>
       </CardFooter>
     </Card>

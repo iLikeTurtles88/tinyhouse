@@ -21,7 +21,7 @@ export default function Home() {
           className="absolute z-0 opacity-60"
         />
         <div className="relative z-10">
-          <h1 className="text-5xl font-bold mb-4">Havres Minuscules de Retraite</h1>
+          <h1 className="text-5xl font-bold mb-4">Tiny Houses</h1>
           <p className="text-xl">Découvrez la liberté et le confort de nos tiny houses uniques.</p>
         </div>
       </section>
@@ -42,8 +42,9 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center p-4 text-muted-foreground">
-        © {new Date().getFullYear()} Havres Minuscules de Retraite. Tous droits réservés.
+        © {new Date().getFullYear()} Tiny Houses. Tous droits réservés.
       </footer>
     </div>
   );
 }
+
