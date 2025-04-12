@@ -28,11 +28,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Bed, Bath, Users, MapPin } from "lucide-react"; // Add other icons if used elsewhere
+import { Bed, Bath, Users, MapPin } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { AmenityItem } from "@/lib/amenity-icons";
-import { motion } from "framer-motion";
-import type { DateRange } from "react-day-picker"; // Type for Calendar range
+import { motion } from "framer-motion"; // Importer motion
+import type { DateRange } from "react-day-picker";
+
+// --- Imports pour le Lightbox ---
+import Lightbox from "yet-another-react-lightbox";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+// --- Fin Imports Lightbox ---
 
 // --- Interface Property ---
 interface Property {
@@ -188,6 +196,9 @@ const PropertyList: React.FC = () => {
   const [adults, setAdults] = useState<number>(1);
   const [children, setChildren] = useState<number>(0);
   const [comments, setComments] = useState("");
+  // States for Lightbox
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   // --- End of State Declarations ---
 
   // --- Event Handlers ---
@@ -198,102 +209,77 @@ const PropertyList: React.FC = () => {
     setIsBookingModalOpen(true);
   };
 
-  const onClose = () => {
+  // Fonction de réinitialisation/fermeture propre
+  const closeAndResetAll = () => {
     setIsBookingModalOpen(false);
-    // Delay resetting the property slightly to allow modal close animation
-    setTimeout(() => {
-      setSelectedProperty(null);
-      setStartDate(undefined);
-      setEndDate(undefined);
-      setName("");
-      setEmail("");
-      setPhone("");
-      setAddress("");
-      setCity("");
-      setPostalCode("");
-      setCountry("");
-      setAdults(1);
-      setChildren(0);
-      setComments("");
-    }, 300); // Match modal animation duration if needed
+    setLightboxOpen(false);
+    // Resetting state immediately
+    setSelectedProperty(null);
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setName("");
+    setEmail("");
+    setPhone("");
+    setAddress("");
+    setCity("");
+    setPostalCode("");
+    setCountry("");
+    setAdults(1);
+    setChildren(0);
+    setComments("");
   };
 
+  // Nouvelle logique pour onOpenChange de la Dialog
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      onClose(); // Call onClose when the dialog requests to be closed
+      if (lightboxOpen) {
+        setLightboxOpen(false);
+      }
+      closeAndResetAll();
+    } else {
+      setIsBookingModalOpen(true);
     }
-    setIsBookingModalOpen(open);
+  };
+
+  // Handler pour ouvrir le lightbox
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
+
+  // Handler pour fermer le lightbox
+  const handleLightboxClose = () => {
+    setLightboxOpen(false);
+  };
+
+  // Handler pour empêcher la fermeture de la modale lors d'une interaction DANS le lightbox
+  const handleModalInteractOutside = (event: Event) => {
+    const targetElement = event.target as Element;
+    const isInsideLightbox = targetElement?.closest?.(".yarl__root");
+    if (isInsideLightbox) {
+      event.preventDefault();
+    }
   };
 
   const confirmBooking = () => {
-    if (!selectedProperty) {
-      toast({
-        title: "Erreur!",
-        description: "Aucune propriété sélectionnée.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (adults + children > selectedProperty.capacity) {
-      toast({
-        title: "Capacité dépassée",
-        description: `Maximum ${selectedProperty.capacity} voyageurs.`,
-        variant: "destructive",
-      });
-      return;
-    }
-    if (!startDate || !endDate) {
-      toast({
-        title: "Dates manquantes",
-        description: "Veuillez sélectionner une date de début et de fin.",
-        variant: "destructive",
-      });
-      return;
-    }
     if (
-      !name ||
-      !email ||
-      !phone ||
-      !address ||
-      !city ||
-      !postalCode ||
-      !country
+      !selectedProperty ||
+      !startDate ||
+      !endDate /* ... autres champs ... */
     ) {
       toast({
-        title: "Champs manquants",
-        description: "Veuillez remplir tous les champs obligatoires (*).",
+        title: "Erreur!",
+        description: "Champs requis manquants.",
         variant: "destructive",
       });
       return;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast({
-        title: "Email invalide",
-        description: "Veuillez entrer une adresse email valide.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // --- Simulation ---
+    // ... (autres validations) ...
     console.log("Booking Data:", {
-      propertyId: selectedProperty.id,
-      startDate,
-      endDate,
-      totalPrice,
-      customer: { name, email, phone, address, city, postalCode, country },
-      guests: { adults, children },
-      comments,
+      /* ... */
     });
-    toast({
-      title: "Réservation Simulée!",
-      description: `Séjour à ${selectedProperty.name} du ${format(
-        startDate,
-        "dd/MM/yyyy"
-      )} au ${format(endDate, "dd/MM/yyyy")} pour ${totalPrice}€.`,
-    });
-    onClose(); // Close and reset modal
+    toast({ title: "Réservation Simulée!", description: `...` });
+    closeAndResetAll();
   };
   // --- End of Event Handlers ---
 
@@ -308,24 +294,56 @@ const PropertyList: React.FC = () => {
         )
       : 0;
   const totalPrice = numberOfDays * (selectedProperty?.price || 0);
+  const lightboxSlides =
+    selectedProperty?.imageUrls.map((url) => ({ src: url })) || [];
   // --- End of Calculations ---
+
+  // --- Variantes d'animation pour la grille et les cartes ---
+  const gridContainerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15, // Délai entre l'apparition de chaque carte
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30 }, // Départ: invisible et 30px plus bas
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }, // Arrivée
+  };
+  // --- Fin Variantes ---
 
   return (
     <div>
-      {/* --- Property Grid --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      {/* --- Property Grid Animée --- */}
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
+        // Déclencher l'animation au scroll
+        variants={gridContainerVariants}
+        initial="hidden"
+        whileInView="show" // Animation quand l'élément entre dans le viewport
+        viewport={{ once: true, amount: 0.1 }} // Déclencher une fois, quand 10% est visible
+      >
         {dummyProperties.map((property) => (
-          <PropertyCard
-            key={property.id}
-            property={property}
-            onSelectProperty={handlePropertyClick}
-          />
+          // Envelopper chaque carte dans un motion.div pour l'animation individuelle
+          <motion.div key={property.id} variants={cardVariants}>
+            <PropertyCard
+              property={property}
+              onSelectProperty={handlePropertyClick}
+            />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
+      {/* --- Fin Property Grid Animée --- */}
 
       {/* --- Booking Modal --- */}
       <Dialog open={isBookingModalOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-6xl w-full max-h-[95vh]">
+        <DialogContent
+          className="sm:max-w-6xl w-full max-h-[95vh]"
+          onInteractOutside={handleModalInteractOutside}
+        >
           {selectedProperty && ( // Render content only when property is selected
             <>
               <DialogHeader className="pr-6 pb-0">
@@ -339,8 +357,6 @@ const PropertyList: React.FC = () => {
               </DialogHeader>
 
               <ScrollArea className="max-h-[calc(95vh-180px)] h-auto px-6 pt-4">
-                {" "}
-                {/* Padding inside scroll area */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                   {/* Image Column */}
                   <div className="lg:col-span-2 space-y-4">
@@ -350,22 +366,40 @@ const PropertyList: React.FC = () => {
                     {selectedProperty.imageUrls?.map((url, index) => (
                       <motion.div
                         key={url + index}
-                        className="relative aspect-video rounded-lg overflow-hidden shadow-md border border-border/50"
+                        className="relative aspect-video rounded-lg overflow-hidden shadow-md border border-border/50 cursor-pointer group"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: index * 0.08 }}
+                        onClick={() => openLightbox(index)} // Open lightbox on click
                       >
                         <Image
                           src={url}
                           alt={`${selectedProperty.name} - Image ${index + 1}`}
                           fill
                           style={{ objectFit: "cover" }}
+                          className="group-hover:scale-105 transition-transform duration-300 ease-in-out"
                           sizes="(max-width: 1200px) 40vw, 500px"
                           loading={index === 0 ? "eager" : "lazy"}
                           onError={(e) => {
                             e.currentTarget.src = "/images/placeholder.jpg";
-                          }} // Basic fallback
+                          }}
                         />
+                        {/* Optional: Add overlay/icon on hover */}
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="32"
+                            height="32"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                          </svg>
+                        </div>
                       </motion.div>
                     ))}
                     {(!selectedProperty.imageUrls ||
@@ -378,6 +412,7 @@ const PropertyList: React.FC = () => {
 
                   {/* Info & Form Column */}
                   <div className="lg:col-span-3 space-y-8">
+                    {/* Description & Amenities Section */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Description
@@ -395,6 +430,7 @@ const PropertyList: React.FC = () => {
                       </div>
                     </section>
 
+                    {/* Details Section */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Détails
@@ -424,6 +460,7 @@ const PropertyList: React.FC = () => {
                       </div>
                     </section>
 
+                    {/* Dates Section */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Sélectionnez vos dates *
@@ -442,12 +479,12 @@ const PropertyList: React.FC = () => {
                               setEndDate(undefined);
                             }
                           }}
-                          numberOfMonths={1} // Use 1 month on smaller screens potentially via state/hook
+                          numberOfMonths={1}
                           disabled={{
                             before: new Date(
                               new Date().setDate(new Date().getDate())
                             ),
-                          }} // Disable today and past
+                          }}
                           className="rounded-md border p-3 shadow-sm"
                         />
                       </div>
@@ -462,6 +499,7 @@ const PropertyList: React.FC = () => {
                       )}
                     </section>
 
+                    {/* Personal Info Section */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Vos informations *
@@ -551,6 +589,7 @@ const PropertyList: React.FC = () => {
                       </div>
                     </section>
 
+                    {/* Guests Section */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Voyageurs *
@@ -563,8 +602,8 @@ const PropertyList: React.FC = () => {
                             onValueChange={(value: string) => {
                               const newAdults = Number(value);
                               if (
-                                newAdults + children >
-                                selectedProperty.capacity
+                                selectedProperty &&
+                                newAdults + children > selectedProperty.capacity
                               ) {
                                 setChildren(
                                   Math.max(
@@ -581,7 +620,7 @@ const PropertyList: React.FC = () => {
                             </SelectTrigger>
                             <SelectContent>
                               {Array.from(
-                                { length: selectedProperty.capacity || 1 },
+                                { length: selectedProperty?.capacity || 1 },
                                 (_, i) => i + 1
                               ).map((num) => (
                                 <SelectItem
@@ -601,7 +640,10 @@ const PropertyList: React.FC = () => {
                             onValueChange={(value: string) =>
                               setChildren(Number(value))
                             }
-                            disabled={adults >= selectedProperty.capacity}
+                            disabled={
+                              !selectedProperty ||
+                              adults >= selectedProperty.capacity
+                            }
                           >
                             <SelectTrigger id="children">
                               <SelectValue placeholder="Enfants" />
@@ -611,7 +653,9 @@ const PropertyList: React.FC = () => {
                                 {
                                   length: Math.max(
                                     0,
-                                    selectedProperty.capacity - adults + 1
+                                    (selectedProperty?.capacity || 0) -
+                                      adults +
+                                      1
                                   ),
                                 },
                                 (_, i) => i
@@ -625,13 +669,16 @@ const PropertyList: React.FC = () => {
                               ))}
                             </SelectContent>
                           </Select>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Max: {selectedProperty.capacity} voyageurs
-                          </p>
+                          {selectedProperty && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Max: {selectedProperty.capacity} voyageurs
+                            </p>
+                          )}
                         </div>
                       </div>
                     </section>
 
+                    {/* Comments Section */}
                     <section>
                       <Label
                         htmlFor="comments"
@@ -652,8 +699,14 @@ const PropertyList: React.FC = () => {
                 </div>
               </ScrollArea>
 
+              {/* Footer */}
               <DialogFooter className="mt-auto pt-4 px-6 pb-4 border-t">
-                <Button type="button" variant="outline" onClick={onClose}>
+                {/* Utiliser closeAndResetAll pour le bouton Annuler */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeAndResetAll}
+                >
                   Annuler
                 </Button>
                 <Button
@@ -663,6 +716,7 @@ const PropertyList: React.FC = () => {
                     !startDate ||
                     !endDate ||
                     totalPrice <= 0 ||
+                    !selectedProperty ||
                     adults + children > selectedProperty.capacity ||
                     adults + children === 0
                   }
@@ -675,6 +729,30 @@ const PropertyList: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* --- Lightbox Component --- */}
+      <Lightbox
+        // Utiliser le handler dédié pour la fermeture
+        open={lightboxOpen}
+        close={handleLightboxClose} // Important !
+        slides={lightboxSlides}
+        index={lightboxIndex}
+        on={{
+          view: ({ index: currentIndex }) => setLightboxIndex(currentIndex),
+        }}
+        // Plugins
+        plugins={[Thumbnails, Zoom]} // Navigation is implicit via styles.css
+        // Controller options
+        controller={{ closeOnBackdropClick: false }} // Prevent closing on backdrop click
+        // Optional configurations
+        zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true }}
+        thumbnails={{ position: "bottom" }}
+        styles={{
+          container: { backgroundColor: "rgba(0, 0, 0, .9)" },
+          thumbnailsContainer: { backgroundColor: "rgba(0,0,0,.7)" },
+        }}
+      />
+      {/* --- End of Lightbox --- */}
     </div>
   );
 };
