@@ -1,7 +1,7 @@
 // src/components/booking-modal.tsx
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react"; // Ajout useRef
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area"; // <-- Keep this import
 import Image from "next/image";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -38,7 +38,7 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import useMediaQuery from "@/hooks/use-media-query";
 
-// --- Interface Property (Peut être déplacée dans src/types/index.ts) ---
+// --- Interface Property ---
 interface Property {
   id: string;
   name: string;
@@ -54,12 +54,11 @@ interface Property {
   bookingEmail: string;
 }
 
-// --- Props Interface for BookingModal ---
+// --- Props Interface ---
 interface BookingModalProps {
   property: Property | null;
   isOpen: boolean;
-  onClose: () => void; // Fonction pour fermer la modale depuis le parent
-  // onSubmitBooking?: (bookingData: any) => void; // Optionnel: Pour gérer la soumission réelle plus tard
+  onClose: () => void;
 }
 
 // --- Booking Modal Component ---
@@ -67,7 +66,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   property,
   isOpen,
   onClose,
-  // onSubmitBooking,
 }) => {
   // --- State ---
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -84,19 +82,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [comments, setComments] = useState("");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  // --- Référence pour DialogContent (pour le fix de transparence) ---
   const contentRef = useRef<HTMLDivElement>(null);
-  // --- End of State ---
 
   // --- Media Query Hook ---
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const calendarNumberOfMonths = isDesktop ? 2 : 1;
-  // --- End Media Query ---
 
-  // --- Effect to reset form when modal opens or property changes ---
+  // --- Effect to reset form ---
   useEffect(() => {
     if (isOpen && property) {
-      // Reset form fields
       setStartDate(undefined);
       setEndDate(undefined);
       setName("");
@@ -116,20 +110,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   // --- Effect pour forcer le reflow (fix transparence initiale) ---
   useEffect(() => {
     if (isOpen && contentRef.current) {
-      // Force un reflow en lisant offsetHeight.
-      // Le setTimeout (même 0 ou 50ms) permet au navigateur de potentiellement
-      // terminer le cycle de rendu CSS initial avant de forcer le recalcul.
       const timerId = setTimeout(() => {
         if (contentRef.current) {
-          // La simple lecture de offsetHeight suffit à déclencher le reflow
           console.log("Forcing reflow:", contentRef.current.offsetHeight);
         }
-      }, 50); // Un délai court (50ms) est souvent suffisant
-
-      return () => clearTimeout(timerId); // Nettoyage du timer
+      }, 50);
+      return () => clearTimeout(timerId);
     }
-  }, [isOpen]); // Se déclenche quand isOpen devient true
-  // --- Fin Effect Reflow ---
+  }, [isOpen]);
 
   // --- Calculations ---
   const numberOfDays =
@@ -143,74 +131,35 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       : 0;
   const totalPrice = numberOfDays * (property?.price || 0);
   const lightboxSlides = property?.imageUrls.map((url) => ({ src: url })) || [];
-  // --- End of Calculations ---
 
   // --- Event Handlers ---
-
-  // Ouvrir Lightbox
   const openLightbox = (index: number) => {
-    console.log(`Opening lightbox at index: ${index}`);
     setLightboxIndex(index);
     setLightboxOpen(true);
   };
-
-  // Fermer Lightbox SEULEMENT
   const handleLightboxClose = useCallback(() => {
-    console.log("Closing lightbox ONLY via handleLightboxClose");
     setLightboxOpen(false);
   }, []);
-
-  // Fonction interne pour gérer la fermeture propre et appeler onClose du parent
   const handleCloseAndReset = useCallback(() => {
-    console.log("Executing handleCloseAndReset (calling parent onClose)");
-    setLightboxOpen(false); // Assure que le lightbox est marqué fermé
-    // Les états du formulaire seront réinitialisés par useEffect lors de la prochaine ouverture
-    onClose(); // Appelle la fonction onClose fournie par PropertyList
+    setLightboxOpen(false);
+    onClose();
   }, [onClose]);
-
-  // Gérer onOpenChange de la Dialog pour l'interaction complexe avec le Lightbox
   const handleModalOpenChange = useCallback(
     (open: boolean) => {
-      console.log(
-        `Modal's internal handleModalOpenChange called with: ${open}, lightboxOpen: ${lightboxOpen}`
-      );
       if (!open) {
-        // Intent de fermeture (clic extérieur, Echap)
         if (!lightboxOpen) {
-          console.log("Modal closing allowed by handleModalOpenChange.");
-          handleCloseAndReset(); // Ferme la modale via le parent
-        } else {
-          console.log(
-            "Modal closing PREVENTED by handleModalOpenChange (lightbox open)."
-          );
-          // Ne fait rien, la modale reste ouverte
+          handleCloseAndReset();
         }
       }
-      // Si open est true, la modale s'ouvre (géré par le parent via la prop `isOpen`)
     },
     [lightboxOpen, handleCloseAndReset]
   );
-
-  // Empêcher la fermeture si clic DANS le Lightbox
   const handleModalInteractOutside = useCallback((event: Event) => {
-    const targetElement = event.target as Element;
-    // Vérifie si le clic vient de l'intérieur d'un élément du lightbox
-    const isInsideLightbox = targetElement?.closest?.(".yarl__root");
-
-    if (isInsideLightbox) {
-      console.log(
-        "InteractOutside prevented (click detected inside .yarl__root)"
-      );
-      event.preventDefault(); // Empêche Radix de fermer la Dialog
-    } else {
-      console.log("InteractOutside allowed (outside lightbox).");
-      // Laisse Radix gérer (appellera onOpenChange(false))
+    if ((event.target as Element)?.closest?.(".yarl__root")) {
+      event.preventDefault();
     }
   }, []);
-
-  // Confirmation de réservation (Simulation)
   const confirmBooking = useCallback(() => {
-    // Validation des champs requis
     if (
       !property ||
       !startDate ||
@@ -248,8 +197,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       });
       return;
     }
-
-    // Préparation des données (pour console log ou futur appel API)
     const bookingData = {
       propertyId: property.id,
       propertyName: property.name,
@@ -268,13 +215,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       children,
       comments,
     };
-
     console.log("Booking Data (Simulation):", bookingData);
-
-    // --- SIMULATION ---
-    // Ici, on appellerait onSubmitBooking(bookingData) si fourni par le parent
-    // et on gérerait les états de chargement/erreur
-
     toast({
       title: "Réservation Simulée!",
       description: `Votre demande pour ${property.name} du ${format(
@@ -283,8 +224,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         { locale: fr }
       )} au ${format(endDate, "PPP", { locale: fr })} a été enregistrée.`,
     });
-
-    // Ferme la modale après la "réservation"
     handleCloseAndReset();
   }, [
     property,
@@ -302,47 +241,36 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     comments,
     numberOfDays,
     totalPrice,
-    handleCloseAndReset, // Utiliser la fonction de fermeture interne
+    handleCloseAndReset,
   ]);
-  // --- Fin Event Handlers ---
 
-  // Ne rien rendre si la modale n'est pas ouverte ou si la propriété n'est pas chargée
-  // (Bien que le rendu conditionnel du contenu soit géré à l'intérieur,
-  // cela évite de rendre la structure Dialog/Lightbox inutilement si isOpen est false)
   if (!isOpen) {
     return null;
   }
 
-  // Rendu JSX de la modale
+  // --- Rendu JSX ---
   return (
     <>
-      {/* Dialog de Shadcn/UI contrôlée par l'état isOpen du parent */}
       <Dialog open={isOpen} onOpenChange={handleModalOpenChange}>
-        {/* Appliquer la ref ici pour le fix de transparence */}
+        {/* ===== CORRECTION START ===== */}
         <DialogContent
           ref={contentRef}
-          className="sm:max-w-6xl w-full max-h-[95vh]"
-          onInteractOutside={handleModalInteractOutside} // Gérer clic extérieur vs lightbox
+          // AJOUT: flex flex-col pour gérer la hauteur
+          // AJOUT: p-0 car le padding sera géré par les enfants (Header, ScrollArea, Footer)
+          className="sm:max-w-6xl w-full max-h-[95vh] flex flex-col p-0"
+          onInteractOutside={handleModalInteractOutside}
           onEscapeKeyDown={(e) => {
-            // Gestion fine de la touche Echap
             if (lightboxOpen) {
-              console.log(
-                "Escape key pressed while lightbox open, closing lightbox."
-              );
-              e.preventDefault(); // Empêche Dialog de gérer Echap pour l'instant
-              handleLightboxClose(); // Ferme d'abord le lightbox
-            } else {
-              console.log(
-                "Escape key pressed while lightbox closed, allowing modal close via onOpenChange."
-              );
-              // Laisser Dialog gérer Echap (appellera onOpenChange(false))
+              e.preventDefault();
+              handleLightboxClose();
             }
           }}
         >
-          {/* Affiche le contenu seulement si une propriété est sélectionnée */}
+          {/* Condition pour afficher le contenu */}
           {property && (
             <>
-              <DialogHeader className="pr-6 pb-0">
+              {/* AJOUT: Padding et bordure inférieure */}
+              <DialogHeader className="px-6 pt-6 pb-4 border-b">
                 <DialogTitle className="text-2xl font-semibold">
                   {property.name}
                 </DialogTitle>
@@ -351,8 +279,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   {property.location} - {property.price}€ / nuit
                 </DialogDescription>
               </DialogHeader>
-              {/* Zone scrollable pour le contenu principal */}
-              <ScrollArea className="max-h-[calc(95vh-180px)] h-auto px-6 pt-4">
+              {/* AJOUT: flex-1 pour prendre l'espace, overflow-y-auto pour scroller */}
+              {/* AJOUT: Padding pour le contenu scrollable */}
+              {/* SUPPRESSION: max-h-[calc(95vh-180px)] h-auto */}
+              <ScrollArea className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
+                {" "}
+                {/* Ajout pb-4 pour espacement avant footer */}
+                {/* Le contenu scrollable reste ici */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                   {/* --- Colonne Images --- */}
                   <div className="lg:col-span-2 space-y-4">
@@ -366,7 +299,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: index * 0.08 }}
-                        onClick={() => openLightbox(index)} // Ouvre le lightbox interne
+                        onClick={() => openLightbox(index)}
                       >
                         <Image
                           src={url}
@@ -423,8 +356,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                         ))}
                       </div>
                     </section>
-
-                    {/* Détails (Capacité, Chambres, Sdb) */}
+                    {/* Détails */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Détails
@@ -453,8 +385,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                         </div>
                       </div>
                     </section>
-
-                    {/* Sélection des Dates */}
+                    {/* Sélection Dates */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Sélectionnez vos dates *
@@ -464,22 +395,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                           mode="range"
                           defaultMonth={startDate ?? new Date()}
                           selected={{ from: startDate, to: endDate }}
-                          onSelect={(range: DateRange | undefined) => {
+                          onSelect={(range) => {
                             setStartDate(range?.from);
                             setEndDate(range?.to);
                           }}
-                          numberOfMonths={calendarNumberOfMonths} // Utilise la variable dynamique
+                          numberOfMonths={calendarNumberOfMonths}
                           disabled={{
                             before: new Date(
                               new Date().setDate(new Date().getDate())
                             ),
-                          }} // Désactive jours passés
-                          className="rounded-md border p-3 shadow-sm w-auto inline-block" // w-auto important
+                          }}
+                          className="rounded-md border p-3 shadow-sm w-auto inline-block"
                           pagedNavigation
                           showOutsideDays
                         />
                       </div>
-                      {/* Affichage Dates / Prix */}
                       <div className="text-center mt-4 space-y-1">
                         {startDate && endDate ? (
                           <>
@@ -505,7 +435,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                         )}
                       </div>
                     </section>
-
                     {/* Informations Personnelles */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
@@ -581,8 +510,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                         </div>
                       </div>
                     </section>
-
-                    {/* Sélection des Voyageurs */}
+                    {/* Sélection Voyageurs */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Voyageurs *
@@ -662,7 +590,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                         </div>
                       </div>
                     </section>
-
                     {/* Commentaires */}
                     <section>
                       <Label
@@ -684,8 +611,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 {/* Fin Grid intérieur */}
               </ScrollArea>{" "}
               {/* Fin ScrollArea */}
-              {/* Footer de la Modale */}
-              <DialogFooter className="mt-auto pt-4 px-6 pb-4 border-t">
+              {/* AJOUT: Padding et bordure supérieure */}
+              <DialogFooter className="px-6 pt-4 pb-4 border-t">
+                {" "}
+                {/* mt-auto supprimé car flex gère */}
                 <Button
                   type="button"
                   variant="outline"
@@ -695,7 +624,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </Button>
                 <Button
                   type="button"
-                  onClick={confirmBooking} // Appelle la fonction de confirmation interne
+                  onClick={confirmBooking}
                   disabled={
                     !startDate ||
                     !endDate ||
@@ -721,19 +650,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           )}{" "}
           {/* Fin condition property */}
         </DialogContent>
-      </Dialog>{" "}
-      {/* Fin Dialog */}
-      {/* --- Composant Lightbox (reste dans la modale) --- */}
+        {/* ===== CORRECTION END ===== */}
+      </Dialog>
+
+      {/* --- Composant Lightbox --- */}
       <Lightbox
         open={lightboxOpen}
-        close={handleLightboxClose} // Utilise le handler spécifique pour fermer SEULEMENT le lightbox
+        close={handleLightboxClose}
         slides={lightboxSlides}
         index={lightboxIndex}
         on={{
           view: ({ index: currentIndex }) => setLightboxIndex(currentIndex),
         }}
         plugins={[Thumbnails, Zoom]}
-        controller={{ closeOnBackdropClick: false }} // Empêche fermeture via clic sur backdrop LB
+        controller={{ closeOnBackdropClick: false }}
         zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true }}
         thumbnails={{
           position: "bottom",
@@ -743,7 +673,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           vignette: false,
         }}
         styles={{
-          container: { backgroundColor: "rgba(0, 0, 0, .90)" }, // Fond opaque
+          container: { backgroundColor: "rgba(0, 0, 0, .90)" },
           thumbnail: {
             opacity: 0.7,
             transition: "opacity 0.2s",
@@ -751,13 +681,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             borderWidth: "2px",
             borderStyle: "solid",
           },
-          // NOTE: La miniature active est stylée via globals.css (.yarl__thumbnail--active)
         }}
       />
-      {/* --- Fin Lightbox --- */}
     </>
   );
 };
-
-// Non nécessaire si export nommé direct
-// export default BookingModal;
