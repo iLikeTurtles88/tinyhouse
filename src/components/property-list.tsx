@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react"; // Ajout useCallback
 import PropertyCard from "@/components/property-card";
 import {
   Dialog,
@@ -86,7 +86,11 @@ const dummyProperties: Property[] = [
     description:
       "Échappez-vous dans cette tiny house lumineuse à deux pas de la mer du Nord. Design épuré, optimisation de l'espace et accès facile à la plage.",
     location: "De Haan (près de Knokke)",
-    imageUrls: ["/images/knokke_1.jpg", "/images/knokke_2.jpg"], // Assuming only 2 images
+    imageUrls: [
+      "/images/knokke_1.jpg",
+      "/images/knokke_2.jpg",
+      "/images/knokke_3.jpg",
+    ],
     price: 140,
     amenities: ["WiFi", "Kitchenette", "Terrasse", "Proche plage", "Parking"],
     capacity: 3,
@@ -101,7 +105,11 @@ const dummyProperties: Property[] = [
     description:
       "Expérience unique sur l'eau dans cette tiny house flottante amarrée près de Gand. Calme, vue sur le canal, et design minimaliste.",
     location: "Watersportbaan, Gand",
-    imageUrls: ["/images/gand_1.jpg", "/images/gand_2.jpg"],
+    imageUrls: [
+      "/images/gand_1.jpg",
+      "/images/gand_2.jpg",
+      "/images/gand_3.jpg",
+    ],
     price: 130,
     amenities: ["WiFi", "Kitchenette", "Terrasse sur l eau", "Kayak"],
     capacity: 2,
@@ -120,7 +128,6 @@ const dummyProperties: Property[] = [
       "/images/bruges_1.jpg",
       "/images/bruges_2.jpg",
       "/images/bruges_3.jpg",
-      "/images/bruges_4.jpg",
     ],
     price: 105,
     amenities: ["WiFi", "Kitchenette", "Jardin", "Pret de velos", "BBQ"],
@@ -136,11 +143,7 @@ const dummyProperties: Property[] = [
     description:
       "Séjour insolite dans un container maritime réaménagé en tiny house design, avec petit jardin privé en ville. Proche des centres d'intérêt d'Anvers.",
     location: "Berchem, Anvers",
-    imageUrls: [
-      "/images/anvers_1.jpg",
-      "/images/anvers_2.jpg",
-      "/images/anvers_3.jpg",
-    ],
+    imageUrls: ["/images/anvers_1.jpg", "/images/anvers_2.jpg"],
     price: 95,
     amenities: ["WiFi", "Kitchenette", "Jardin prive", "Design", "Parking"],
     capacity: 2,
@@ -155,12 +158,7 @@ const dummyProperties: Property[] = [
     description:
       "Charmante tiny house autonome (panneaux solaires) dans les paysages vallonnés du Condroz, près de Liège. Silence, nature et ciel étoilé garantis.",
     location: "Modave (Condroz, près de Liège)",
-    imageUrls: [
-      "/images/liege_1.jpg",
-      "/images/liege_2.jpg",
-      "/images/liege_3.jpg",
-      "/images/liege_4.jpg",
-    ],
+    imageUrls: ["/images/liege_1.jpg", "/images/liege_2.jpg"],
     price: 125,
     amenities: [
       "Kitchenette",
@@ -206,80 +204,169 @@ const PropertyList: React.FC = () => {
     setSelectedProperty(property);
     setAdults(1); // Reset guests to default
     setChildren(0);
-    setIsBookingModalOpen(true);
+    setIsBookingModalOpen(true); // Ouvre la modale
+    setLightboxOpen(false); // Assure que le lightbox est fermé quand on sélectionne une nouvelle propriété
   };
 
-  // Fonction de réinitialisation/fermeture propre
-  const closeAndResetAll = () => {
+  // Fonction de réinitialisation/fermeture PROPRE de la MODALE et du FORMULAIRE
+  const closeAndResetModal = useCallback(() => {
+    console.log("Executing closeAndResetModal");
     setIsBookingModalOpen(false);
-    setLightboxOpen(false);
-    // Resetting state immediately
-    setSelectedProperty(null);
-    setStartDate(undefined);
-    setEndDate(undefined);
-    setName("");
-    setEmail("");
-    setPhone("");
-    setAddress("");
-    setCity("");
-    setPostalCode("");
-    setCountry("");
-    setAdults(1);
-    setChildren(0);
-    setComments("");
-  };
+    // On ne touche PAS à setLightboxOpen ici, car il pourrait être fermé séparément
+    // Réinitialiser les états liés à la modale et au formulaire
+    // Utilisation d'un léger délai pour potentiellement aider avec les transitions CSS/JS de la modale
+    setTimeout(() => {
+      console.log("Resetting modal state inside timeout");
+      setSelectedProperty(null);
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setName("");
+      setEmail("");
+      setPhone("");
+      setAddress("");
+      setCity("");
+      setPostalCode("");
+      setCountry("");
+      setAdults(1);
+      setChildren(0);
+      setComments("");
+    }, 50); // 50ms delay
+  }, []); // Pas de dépendances externes, les setters useState sont stables
 
-  // Nouvelle logique pour onOpenChange de la Dialog
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      if (lightboxOpen) {
-        setLightboxOpen(false);
+  // NOUVELLE logique pour onOpenChange de la Dialog
+  const handleModalOpenChange = useCallback(
+    (open: boolean) => {
+      console.log(
+        `handleModalOpenChange called with: ${open}, current lightboxOpen state: ${lightboxOpen}`
+      );
+      if (!open) {
+        // Une action tente de fermer la modale (clic extérieur, Echap, bouton Annuler via onOpenChange)
+        if (!lightboxOpen) {
+          // Si le lightbox n'est PAS ouvert, on peut fermer la modale et reset
+          console.log("Modal closing allowed (lightbox was not open)");
+          closeAndResetModal();
+        } else {
+          // Si le lightbox EST ouvert, NE PAS fermer la modale.
+          // L'utilisateur doit fermer le lightbox d'abord (via son propre bouton/mécanisme).
+          console.log(
+            "Modal close prevented by onOpenChange (lightbox is open)"
+          );
+          // Normalement, on ne fait rien ici, la modale reste ouverte.
+          // onInteractOutside devrait avoir empêché cela si le clic était DANS le lightbox.
+        }
+      } else {
+        // Ouvre la modale (généralement suite à handlePropertyClick qui set isBookingModalOpen à true)
+        console.log("Modal opening intent received by onOpenChange");
+        // Assure que la modale est bien ouverte (redondant si déjà géré par handlePropertyClick mais sans danger)
+        setIsBookingModalOpen(true);
       }
-      closeAndResetAll();
-    } else {
-      setIsBookingModalOpen(true);
-    }
-  };
+    },
+    [lightboxOpen, closeAndResetModal]
+  ); // Dépend de l'état actuel du lightbox et de la fonction de fermeture
 
-  // Handler pour ouvrir le lightbox
+  // Handler pour ouvrir le lightbox (inchangé)
   const openLightbox = (index: number) => {
+    console.log(`Opening lightbox at index: ${index}`);
     setLightboxIndex(index);
     setLightboxOpen(true);
   };
 
-  // Handler pour fermer le lightbox
-  const handleLightboxClose = () => {
+  // Handler pour fermer le lightbox (NE DOIT PAS FERMER LA MODALE)
+  const handleLightboxClose = useCallback(() => {
+    console.log("Closing lightbox ONLY via handleLightboxClose");
     setLightboxOpen(false);
-  };
+    // Important: On ne touche PAS à isBookingModalOpen ici. La modale reste ouverte.
+  }, []); // Pas de dépendances
 
   // Handler pour empêcher la fermeture de la modale lors d'une interaction DANS le lightbox
-  const handleModalInteractOutside = (event: Event) => {
+  const handleModalInteractOutside = useCallback((event: Event) => {
     const targetElement = event.target as Element;
     const isInsideLightbox = targetElement?.closest?.(".yarl__root");
+
     if (isInsideLightbox) {
-      event.preventDefault();
+      console.log(
+        "InteractOutside prevented (click detected inside .yarl__root)"
+      );
+      // === ON CONSERVE CECI ===
+      event.preventDefault(); // Empêche la Dialog de traiter cela comme un clic extérieur et de se fermer
+
+      // === ON SUPPRIME CECI ===
+      // event.stopPropagation(); // NE PAS arrêter la propagation, pour que les boutons du lightbox fonctionnent
+      // =========================
+    } else {
+      console.log(
+        "InteractOutside allowed (click was outside modal content and outside .yarl__root)"
+      );
+      // Laisse Radix UI/Shadcn gérer la fermeture via onOpenChange(false)
     }
-  };
+  }, []); // Pas de dépendances
 
   const confirmBooking = () => {
     if (
       !selectedProperty ||
       !startDate ||
-      !endDate /* ... autres champs ... */
+      !endDate ||
+      !name ||
+      !email ||
+      !phone ||
+      !address ||
+      !city ||
+      !postalCode ||
+      !country
     ) {
       toast({
-        title: "Erreur!",
-        description: "Champs requis manquants.",
+        title: "Erreur de formulaire!",
+        description: "Veuillez remplir tous les champs obligatoires (*).",
         variant: "destructive",
       });
       return;
     }
-    // ... (autres validations) ...
+    if (adults + children <= 0) {
+      toast({
+        title: "Erreur de formulaire!",
+        description: "Veuillez sélectionner au moins un voyageur.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (adults + children > (selectedProperty?.capacity ?? 0)) {
+      toast({
+        title: "Erreur!",
+        description: `Le nombre de voyageurs (${
+          adults + children
+        }) dépasse la capacité maximale (${selectedProperty?.capacity}).`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Simulation réussie
     console.log("Booking Data:", {
-      /* ... */
+      propertyId: selectedProperty.id,
+      propertyName: selectedProperty.name,
+      startDate: format(startDate, "yyyy-MM-dd"),
+      endDate: format(endDate, "yyyy-MM-dd"),
+      numberOfNights: numberOfDays,
+      totalPrice: totalPrice,
+      name,
+      email,
+      phone,
+      address,
+      city,
+      postalCode,
+      country,
+      adults,
+      children,
+      comments,
     });
-    toast({ title: "Réservation Simulée!", description: `...` });
-    closeAndResetAll();
+    toast({
+      title: "Réservation Simulée!",
+      description: `Votre demande pour ${selectedProperty.name} du ${format(
+        startDate,
+        "dd/MM/yyyy"
+      )} au ${format(endDate, "dd/MM/yyyy")} a été enregistrée.`,
+    });
+    closeAndResetModal(); // Fermer et réinitialiser la modale après succès
   };
   // --- End of Event Handlers ---
 
@@ -294,6 +381,7 @@ const PropertyList: React.FC = () => {
         )
       : 0;
   const totalPrice = numberOfDays * (selectedProperty?.price || 0);
+  // Préparer les slides pour le lightbox (ne change pas souvent, mais recalculé si selectedProperty change)
   const lightboxSlides =
     selectedProperty?.imageUrls.map((url) => ({ src: url })) || [];
   // --- End of Calculations ---
@@ -320,31 +408,41 @@ const PropertyList: React.FC = () => {
       {/* --- Property Grid Animée --- */}
       <motion.div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
-        // Déclencher l'animation au scroll
         variants={gridContainerVariants}
         initial="hidden"
-        whileInView="show" // Animation quand l'élément entre dans le viewport
-        viewport={{ once: true, amount: 0.1 }} // Déclencher une fois, quand 10% est visible
+        whileInView="show"
+        viewport={{ once: true, amount: 0.1 }}
       >
         {dummyProperties.map((property) => (
-          // Envelopper chaque carte dans un motion.div pour l'animation individuelle
           <motion.div key={property.id} variants={cardVariants}>
             <PropertyCard
               property={property}
-              onSelectProperty={handlePropertyClick}
+              onSelectProperty={handlePropertyClick} // Ouvre la modale lors du clic
             />
           </motion.div>
         ))}
       </motion.div>
       {/* --- Fin Property Grid Animée --- */}
-
       {/* --- Booking Modal --- */}
-      <Dialog open={isBookingModalOpen} onOpenChange={handleOpenChange}>
+      {/* On contrôle l'ouverture/fermeture via l'état et onOpenChange */}
+      <Dialog open={isBookingModalOpen} onOpenChange={handleModalOpenChange}>
+        {/* Pas besoin de DialogTrigger car l'ouverture est gérée par handlePropertyClick */}
         <DialogContent
           className="sm:max-w-6xl w-full max-h-[95vh]"
-          onInteractOutside={handleModalInteractOutside}
+          onInteractOutside={handleModalInteractOutside} // Empêche la fermeture si on clique DANS le lightbox
+          // onEscapeKeyDown={(e) => { // Optionnel : Gestion fine de la touche Echap
+          //   if (lightboxOpen) {
+          //       console.log("Escape key pressed while lightbox open, closing lightbox.");
+          //       e.preventDefault(); // Empêche la Dialog de gérer Echap
+          //       handleLightboxClose(); // Fermer d'abord le lightbox
+          //   } else {
+          //       console.log("Escape key pressed while lightbox closed, allowing modal close.");
+          //       // Laisser la Dialog gérer Echap (ce qui appellera onOpenChange(false))
+          //   }
+          // }}
         >
-          {selectedProperty && ( // Render content only when property is selected
+          {/* On affiche le contenu seulement si une propriété est sélectionnée */}
+          {selectedProperty && (
             <>
               <DialogHeader className="pr-6 pb-0">
                 <DialogTitle className="text-2xl font-semibold">
@@ -355,14 +453,15 @@ const PropertyList: React.FC = () => {
                   {selectedProperty.location} - {selectedProperty.price}€ / nuit
                 </DialogDescription>
               </DialogHeader>
-
+              {/* Zone scrollable pour le contenu principal */}
               <ScrollArea className="max-h-[calc(95vh-180px)] h-auto px-6 pt-4">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                  {/* Image Column */}
+                  {/* Colonne Images */}
                   <div className="lg:col-span-2 space-y-4">
                     <h3 className="font-semibold text-lg mb-2 sticky top-0 bg-background py-2 z-10">
                       Photos
                     </h3>
+                    {/* Mapping des images pour affichage et clic pour Lightbox */}
                     {selectedProperty.imageUrls?.map((url, index) => (
                       <motion.div
                         key={url + index}
@@ -370,7 +469,7 @@ const PropertyList: React.FC = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: index * 0.08 }}
-                        onClick={() => openLightbox(index)} // Open lightbox on click
+                        onClick={() => openLightbox(index)} // Ouvre le lightbox à l'index cliqué
                       >
                         <Image
                           src={url}
@@ -379,13 +478,14 @@ const PropertyList: React.FC = () => {
                           style={{ objectFit: "cover" }}
                           className="group-hover:scale-105 transition-transform duration-300 ease-in-out"
                           sizes="(max-width: 1200px) 40vw, 500px"
-                          loading={index === 0 ? "eager" : "lazy"}
+                          loading={index === 0 ? "eager" : "lazy"} // Première image chargée en priorité
                           onError={(e) => {
+                            // Fallback si image manquante
                             e.currentTarget.src = "/images/placeholder.jpg";
                           }}
                         />
-                        {/* Optional: Add overlay/icon on hover */}
-                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {/* Indicateur visuel pour l'ouverture du lightbox */}
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="32"
@@ -409,10 +509,9 @@ const PropertyList: React.FC = () => {
                       </p>
                     )}
                   </div>
-
-                  {/* Info & Form Column */}
+                  {/* Colonne Infos & Formulaire */}
                   <div className="lg:col-span-3 space-y-8">
-                    {/* Description & Amenities Section */}
+                    {/* Section Description & Équipements */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Description
@@ -430,7 +529,7 @@ const PropertyList: React.FC = () => {
                       </div>
                     </section>
 
-                    {/* Details Section */}
+                    {/* Section Détails (Capacité, Chambres, Sdb) */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Détails
@@ -460,7 +559,7 @@ const PropertyList: React.FC = () => {
                       </div>
                     </section>
 
-                    {/* Dates Section */}
+                    {/* Section Sélection des Dates */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Sélectionnez vos dates *
@@ -471,20 +570,15 @@ const PropertyList: React.FC = () => {
                           defaultMonth={startDate ?? new Date()}
                           selected={{ from: startDate, to: endDate }}
                           onSelect={(range: DateRange | undefined) => {
-                            if (range) {
-                              setStartDate(range.from);
-                              setEndDate(range.to);
-                            } else {
-                              setStartDate(undefined);
-                              setEndDate(undefined);
-                            }
+                            setStartDate(range?.from);
+                            setEndDate(range?.to);
                           }}
-                          numberOfMonths={1}
+                          numberOfMonths={1} // Afficher 1 mois à la fois
                           disabled={{
                             before: new Date(
                               new Date().setDate(new Date().getDate())
                             ),
-                          }}
+                          }} // Désactiver dates passées
                           className="rounded-md border p-3 shadow-sm"
                         />
                       </div>
@@ -499,7 +593,7 @@ const PropertyList: React.FC = () => {
                       )}
                     </section>
 
-                    {/* Personal Info Section */}
+                    {/* Section Informations Personnelles */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Vos informations *
@@ -510,9 +604,7 @@ const PropertyList: React.FC = () => {
                           <Input
                             id="name"
                             value={name}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => setName(e.target.value)}
+                            onChange={(e) => setName(e.target.value)}
                             required
                           />
                         </div>
@@ -522,9 +614,7 @@ const PropertyList: React.FC = () => {
                             id="email"
                             type="email"
                             value={email}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => setEmail(e.target.value)}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                           />
                         </div>
@@ -534,9 +624,7 @@ const PropertyList: React.FC = () => {
                             id="phone"
                             type="tel"
                             value={phone}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => setPhone(e.target.value)}
+                            onChange={(e) => setPhone(e.target.value)}
                             required
                           />
                         </div>
@@ -545,9 +633,7 @@ const PropertyList: React.FC = () => {
                           <Input
                             id="address"
                             value={address}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => setAddress(e.target.value)}
+                            onChange={(e) => setAddress(e.target.value)}
                             required
                           />
                         </div>
@@ -556,9 +642,7 @@ const PropertyList: React.FC = () => {
                           <Input
                             id="city"
                             value={city}
-                            onChange={(
-                              e: React.ChangeEvent<HTMLInputElement>
-                            ) => setCity(e.target.value)}
+                            onChange={(e) => setCity(e.target.value)}
                             required
                           />
                         </div>
@@ -568,9 +652,7 @@ const PropertyList: React.FC = () => {
                             <Input
                               id="postalCode"
                               value={postalCode}
-                              onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>
-                              ) => setPostalCode(e.target.value)}
+                              onChange={(e) => setPostalCode(e.target.value)}
                               required
                             />
                           </div>
@@ -579,9 +661,7 @@ const PropertyList: React.FC = () => {
                             <Input
                               id="country"
                               value={country}
-                              onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>
-                              ) => setCountry(e.target.value)}
+                              onChange={(e) => setCountry(e.target.value)}
                               required
                             />
                           </div>
@@ -589,7 +669,7 @@ const PropertyList: React.FC = () => {
                       </div>
                     </section>
 
-                    {/* Guests Section */}
+                    {/* Section Sélection des Voyageurs */}
                     <section>
                       <h3 className="font-semibold text-lg mb-3 border-b pb-2">
                         Voyageurs *
@@ -599,12 +679,13 @@ const PropertyList: React.FC = () => {
                           <Label htmlFor="adults">Adultes</Label>
                           <Select
                             value={String(adults)}
-                            onValueChange={(value: string) => {
+                            onValueChange={(value) => {
                               const newAdults = Number(value);
                               if (
                                 selectedProperty &&
                                 newAdults + children > selectedProperty.capacity
                               ) {
+                                // Si dépasse capacité, réduire les enfants
                                 setChildren(
                                   Math.max(
                                     0,
@@ -619,6 +700,7 @@ const PropertyList: React.FC = () => {
                               <SelectValue placeholder="Adultes" />
                             </SelectTrigger>
                             <SelectContent>
+                              {/* Générer options de 1 à capacité max */}
                               {Array.from(
                                 { length: selectedProperty?.capacity || 1 },
                                 (_, i) => i + 1
@@ -637,9 +719,10 @@ const PropertyList: React.FC = () => {
                           <Label htmlFor="children">Enfants</Label>
                           <Select
                             value={String(children)}
-                            onValueChange={(value: string) =>
+                            onValueChange={(value) =>
                               setChildren(Number(value))
                             }
+                            // Désactiver si capacité max atteinte par les adultes
                             disabled={
                               !selectedProperty ||
                               adults >= selectedProperty.capacity
@@ -649,6 +732,7 @@ const PropertyList: React.FC = () => {
                               <SelectValue placeholder="Enfants" />
                             </SelectTrigger>
                             <SelectContent>
+                              {/* Générer options de 0 à capacité restante */}
                               {Array.from(
                                 {
                                   length: Math.max(
@@ -671,14 +755,15 @@ const PropertyList: React.FC = () => {
                           </Select>
                           {selectedProperty && (
                             <p className="text-xs text-muted-foreground mt-1">
-                              Max: {selectedProperty.capacity} voyageurs
+                              Max: {selectedProperty.capacity} voyageurs au
+                              total
                             </p>
                           )}
                         </div>
                       </div>
                     </section>
 
-                    {/* Comments Section */}
+                    {/* Section Commentaires */}
                     <section>
                       <Label
                         htmlFor="comments"
@@ -689,70 +774,96 @@ const PropertyList: React.FC = () => {
                       <Textarea
                         id="comments"
                         value={comments}
-                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                          setComments(e.target.value)
-                        }
-                        placeholder="Allergies, heure d'arrivée approximative, etc."
+                        onChange={(e) => setComments(e.target.value)}
+                        placeholder="Allergies, heure d'arrivée approximative, besoin spécifique..."
                       />
                     </section>
-                  </div>
-                </div>
-              </ScrollArea>
-
-              {/* Footer */}
+                  </div>{" "}
+                  {/* Fin Colonne Infos & Formulaire */}
+                </div>{" "}
+                {/* Fin Grid intérieur */}
+              </ScrollArea>{" "}
+              {/* Fin ScrollArea */}
+              {/* Footer de la Modale */}
               <DialogFooter className="mt-auto pt-4 px-6 pb-4 border-t">
-                {/* Utiliser closeAndResetAll pour le bouton Annuler */}
+                {/* Bouton Annuler utilise la nouvelle fonction de fermeture */}
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={closeAndResetAll}
+                  onClick={closeAndResetModal}
                 >
                   Annuler
                 </Button>
+                {/* Bouton Confirmer */}
                 <Button
                   type="button"
                   onClick={confirmBooking}
                   disabled={
+                    // Conditions de désactivation
                     !startDate ||
                     !endDate ||
                     totalPrice <= 0 ||
                     !selectedProperty ||
-                    adults + children > selectedProperty.capacity ||
-                    adults + children === 0
+                    !name ||
+                    !email ||
+                    !phone ||
+                    !address ||
+                    !city ||
+                    !postalCode ||
+                    !country || // Champs requis
+                    adults + children <= 0 || // Au moins un voyageur
+                    adults + children > selectedProperty.capacity // Ne pas dépasser la capacité
                   }
                   size="lg"
                 >
-                  Confirmer ({totalPrice > 0 ? `${totalPrice}€` : "..."})
+                  Confirmer la réservation{" "}
+                  {totalPrice > 0 ? `(${totalPrice}€)` : ""}
                 </Button>
               </DialogFooter>
             </>
-          )}
+          )}{" "}
+          {/* Fin condition selectedProperty */}
         </DialogContent>
-      </Dialog>
-
-      {/* --- Lightbox Component --- */}
+      </Dialog>{" "}
+      {/* Fin Dialog */}
+      {/* --- Composant Lightbox --- */}
+      {/* Rendu conditionnel basé sur l'état lightboxOpen */}
       <Lightbox
-        // Utiliser le handler dédié pour la fermeture
         open={lightboxOpen}
-        close={handleLightboxClose} // Important !
+        close={handleLightboxClose}
         slides={lightboxSlides}
         index={lightboxIndex}
         on={{
           view: ({ index: currentIndex }) => setLightboxIndex(currentIndex),
         }}
-        // Plugins
-        plugins={[Thumbnails, Zoom]} // Navigation is implicit via styles.css
-        // Controller options
-        controller={{ closeOnBackdropClick: false }} // Prevent closing on backdrop click
-        // Optional configurations
+        plugins={[Thumbnails, Zoom]}
+        controller={{ closeOnBackdropClick: false }}
         zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true }}
-        thumbnails={{ position: "bottom" }}
+        thumbnails={{
+          position: "bottom",
+          border: 0,
+          gap: 8,
+          imageFit: "cover",
+          vignette: false,
+        }}
         styles={{
-          container: { backgroundColor: "rgba(0, 0, 0, .9)" },
-          thumbnailsContainer: { backgroundColor: "rgba(0,0,0,.7)" },
+          // Assure-toi que cette ligne est bien présente et correcte
+          container: { backgroundColor: "rgba(0, 0, 0, .90)" }, // 0.90 = 90% opaque
+
+          // --- ATTENTION : Ne pas mettre de background sur thumbnailsContainer ici ---
+          // thumbnailsContainer: { backgroundColor: "rgba(20, 20, 20, .8)" }, // <-- SUPPRIMER ou COMMENTER CETTE LIGNE
+
+          thumbnail: {
+            opacity: 0.7,
+            transition: "opacity 0.2s",
+            borderColor: "transparent",
+            borderWidth: "2px",
+            borderStyle: "solid",
+          },
+          // PAS de thumbnailActive ici
         }}
       />
-      {/* --- End of Lightbox --- */}
+      {/* --- Fin Lightbox --- */}
     </div>
   );
 };

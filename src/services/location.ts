@@ -1,3 +1,5 @@
+/** location.ts */
+
 /**
  * Represents a geographical location with latitude and longitude coordinates.
  */
@@ -36,13 +38,14 @@ export interface LocationDetails {
  * @param location The location for which to retrieve location details.
  * @returns A promise that resolves to a LocationDetails object containing city, state and country.
  */
-export async function getLocationDetails(location: Location): Promise<LocationDetails> {
+export async function getLocationDetails(
+  location: Location
+): Promise<LocationDetails> {
   // TODO: Implement this by calling an API.
 
   return {
-    city: 'Los Angeles',
-    state: 'California',
-    country: 'USA',
+    city: "Los Angeles",
+    state: "California",
+    country: "USA",
   };
 }
-

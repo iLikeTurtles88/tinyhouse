@@ -84,3 +84,34 @@
     @apply bg-muted-foreground/80;
   }
 }
+
+/* Styles pour le Lightbox (yet-another-react-lightbox) */
+@layer components {
+  /* Ou à la fin du fichier */
+
+  /* --- Styles Lightbox --- */
+
+  /* Assurer que le conteneur racine du Lightbox est au-dessus ET interactif */
+  .yarl__root {
+    z-index: 100 !important; /* Valeur élevée pour être au-dessus de la modale */
+    pointer-events: auto !important; /* ESSENTIEL: pour contrer le pointer-events:none du body */
+  }
+
+  /* Style pour la miniature active dans le Lightbox */
+  .yarl__thumbnail.yarl__thumbnail--active {
+    opacity: 1 !important;
+    border-color: hsl(var(--primary)) !important;
+  }
+
+  /* Style optionnel au survol des miniatures (non actives) */
+  .yarl__thumbnail:not(.yarl__thumbnail--active):hover {
+    opacity: 0.85;
+  }
+
+  /* Optionnel: Assurer que l'image dans la miniature couvre bien */
+  .yarl__thumbnail_img {
+    object-fit: cover;
+  }
+
+  /* --- Fin Styles Lightbox --- */
+}
