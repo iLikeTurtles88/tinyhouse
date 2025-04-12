@@ -68,7 +68,7 @@ const dummyProperties: Property[] = [
   },
   {
     id: "3",
-    name: "La Cabane Flottante (Gand)",
+    name: "La Cabane Flottante",
     description:
       "Expérience unique sur l'eau dans cette tiny house flottante amarrée près de Gand. Calme, vue sur le canal, et design minimaliste.",
     location: "Watersportbaan, Gand",
@@ -106,7 +106,7 @@ const dummyProperties: Property[] = [
   },
   {
     id: "5",
-    name: "Tiny Container Urbain (Anvers)",
+    name: "Tiny Container Urbain",
     description:
       "Séjour insolite dans un container maritime réaménagé en tiny house design, avec petit jardin privé en ville. Proche des centres d'intérêt d'Anvers.",
     location: "Berchem, Anvers",
