@@ -26,8 +26,8 @@ export const metadata: Metadata = {
       {
         url: "https://tinyhouse-two.vercel.app/images/logo.png", // URL complète vers ton logo
         // IMPORTANT: Ajoute la largeur et la hauteur EXACTES de ton logo.png
-        width: 1024, // À remplacer par la largeur réelle de logo.png
-        height: 1024, // À remplacer par la hauteur réelle de logo.png
+        width: 512, // À remplacer par la largeur réelle de logo.png
+        height: 512, // À remplacer par la hauteur réelle de logo.png
         alt: "Logo TinyHouse Location", // Texte alternatif pour l'image
       },
       // Optionnel: Tu peux ajouter d'autres images (par ex. une image plus grande et rectangulaire pour une meilleure preview)
