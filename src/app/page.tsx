@@ -46,15 +46,15 @@ export default function Home() {
       },
       particles: {
         number: {
-          value: 40, // Nombre de feuilles (ajuster selon besoin/performance)
+          value: 80, // Nombre de feuilles (ajuster selon besoin/performance)
           density: { enable: true, area: 800 },
         },
         shape: {
           type: "image", // Utiliser une image
           image: {
-            src: "/images/leaf.png", // Chemin vers ton image de feuille
-            width: 100, // Largeur de l'image originale
-            height: 100, // Hauteur de l'image originale
+            src: "/images/leaf.png", // Chemin public correct
+            width: 50, // Doit correspondre à la largeur réelle de ton image leaf.png
+            height: 50, // Doit correspondre à la hauteur réelle de ton image leaf.png
           },
         },
         opacity: {
